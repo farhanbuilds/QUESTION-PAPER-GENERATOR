@@ -1,0 +1,37 @@
+QUESTION-PAPER-GENERATOR/
+├── backend/
+│   ├── controllers/
+│   │   └── extractData.js      # Logic for extracting and structuring data from files
+│   ├── data/                   # Stores structured data or intermediate files
+│   ├── fileHandlers/
+│   │   ├── parseDocx.js        # Logic for parsing DOCX files
+│   │   ├── parsePdf.js         # Logic for parsing PDF files
+│   ├── routes/
+│   │   └── fileRoutes.js       # API routes for handling file uploads, data viewing, and downloads
+│   ├── uploads/                # Temporary storage for uploaded files
+│   ├── server.js               # Entry point for the server
+│   └── package.json            # Dependencies and scripts
+|
+├── frontend/
+│   ├── public/                    # Static files and the HTML template
+│   │   ├── index.html             # Main HTML file for React
+│   │   ├── favicon.ico            # Favicon for the app
+│   │   └── manifest.json          # Metadata for PWA support (optional)
+│   ├── src/                       # Source code for the React application
+│   │   ├── components/            # Reusable React components
+│   │   │   ├── UploadForm.jsx      # Component for uploading files
+│   │   │   ├── Navbar.jsx           # Component for rendering Part A questions
+│   │   │   ├── viewData.jsx           # Component for rendering Part B questions  # Component for downloading data as a PDF
+│   │   ├── pages/                 # Page-level components
+│   │   │   ├── HomePage.js        # Main page for file uploads
+│   │   │   └── ViewData.js        # Page to view and process structured data
+│   │   ├── utils/                 # Utility functions
+│   │   │   └── pdfGenerator.js    # Utility to generate PDFs
+│   │   ├── App.js                 # Main App component
+│   │   ├── index.js               # Entry point of the app
+│   │   ├── App.css                # Global styles (if needed)
+│   │   └── config.js              # Configuration file for API URLs
+│   ├── package.json               # Dependencies and scripts
+│   ├── .env                       # Environment variables (e.g., API URLs)
+│   ├── .gitignore                 # Ignore list for Git
+│   └── README.md                  # Documentation for the frontend
