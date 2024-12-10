@@ -15,28 +15,69 @@ const ViewData = () => {
     const partAQuestionCount = {}; // To track the number of questions taken per unit for Part A
     let totalQuestionsInPartB = 0;
 
+    let unitData = {};
+    data.forEach((entry) =>{
+      if (!unitData[entry.unit]) {
+        unitData[entry.unit] = 0;
+      }
+      
+      unitData[entry.unit]++;
+    });
+
+    let totalUnits = Object.keys(unitData).length;
+    console.log("Total units 2 : ", totalUnits);
+    console.log("question per unit : ", unitData);
+
+    let selectedQuestions = [];
+    let unitQuestionsMap = {};
+
+
+    data.forEach(item => {
+      if (!unitQuestionsMap[item.unit]) {
+        unitQuestionsMap[item.unit] = new Set();
+      }
+
+      if (unitQuestionsMap[item.unit].size < 2) {
+        unitQuestionsMap[item.unit].add(item.questions);
+      }
+    });
+
+    for(let unit in unitQuestionsMap) {
+      Array.from(unitQuestionsMap[unit]).forEach(questions => {
+        selectedQuestions.push({unit: unit, question: questions});
+      });
+    }
+
+    console.log("selected ",selectedQuestions);
+    selectedQuestions.forEach(item => {
+      console.log(item.question);
+    });
+
     // Part A: 2 questions per unit
     data.forEach((unit) => {
       const unitId = unit.unit; // Identify the unit
       const unitQuestions = unit.questions || []; // Ensure unit has questions
       partAQuestionCount[unitId] = 0; // Initialize count for this unit
-
-      unitQuestions.forEach((question) => {
+      
+      
+      for (let i = 0; i < unitQuestions.length; i++) {
         if (partAQuestionCount[unitId] < 2) {
-          partA.push(question); // Add question to Part A
+          partA.push(unitQuestions[i]); // Add question to Part A
           partAQuestionCount[unitId] += 1; // Increment count for this unit
+        } else {
+          break; // Stop once 2 questions have been added
         }
-      });
+      }
     });
-
+  
     // Part B: 5 questions in total
     const allUnitsQuestions = data.flatMap((unit) => unit.questions || []); // Combine all questions from all units
     const pickedUnits = {}; // To track questions picked per unit in Part B
-
+  
     allUnitsQuestions.forEach((question) => {
       const unitId = question.unit || "unknown"; // Ensure unitId exists
       if (!pickedUnits[unitId]) pickedUnits[unitId] = 0; // Initialize if not exists
-
+  
       // Pick questions round-robin style from all units
       if (
         totalQuestionsInPartB < 5 &&
@@ -47,9 +88,11 @@ const ViewData = () => {
         totalQuestionsInPartB++; // Increment total question count for Part B
       }
     });
-
+    console.log("paRT A",partA);
+    console.log("paRT b",partB);
     return { partA, partB };
   };
+  
 
   const generatePDF = () => {
     const { partA, partB } = processParts(structuredData);
@@ -67,7 +110,6 @@ const ViewData = () => {
     let y = 30;
     partA.forEach((q, index) => {
       doc.text(`${index + 1}. ${q.question}`, 10, y);
-      doc.text(`Answer: ${q.answer}`, 10, y + 6);
       y += 14;
       if (y > 280) {
         doc.addPage();
@@ -81,7 +123,6 @@ const ViewData = () => {
     y += 20;
     partB.forEach((q, index) => {
       doc.text(`${index + 1}. ${q.question}`, 10, y);
-      doc.text(`Answer: ${q.answer}`, 10, y + 6);
       y += 14;
       if (y > 280) {
         doc.addPage();
@@ -145,7 +186,7 @@ const ViewData = () => {
             <li key={index}>
               <strong>{q.question}</strong>
               <br />
-              <em>{q.answer}</em>
+              <br />
             </li>
           ))}
         </ul>
@@ -159,7 +200,7 @@ const ViewData = () => {
             <li key={index}>
               <strong>{q.question}</strong>
               <br />
-              <em>{q.answer}</em>
+              <br />
             </li>
           ))}
         </ul>

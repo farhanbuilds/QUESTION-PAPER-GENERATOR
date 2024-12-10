@@ -54,32 +54,32 @@ export default function UploadForm() {
 
   return (
     <>
-      <div className="w-full h-full flex justify-center items-center mt-10">
+      <div className="w-screen h-screen flex justify-center items-center  bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <div className="">
-          <h1 className="text-black font-bold text-2xl text-center">
+          <h1 className="text-white font-bold text-2xl text-center">
             Generate Question Paper by uploading Question Bank
           </h1>
 
-          <p className="text-black text-center mt-5">
+          <p className="text-gray-300 text-center mt-5">
             Upload a question bank pdf or docx file to generate a question
             paper
           </p>
-          <div className="flex items-center flex-col gap-2 justify-center max-w-full mt-5">
+          <div className="flex items-center flex-col gap-2 justify-center max-w-full mt-5 ">
             <form
-              className="bg-white shadow-lg border border-gray-300 rounded-2xl p-8 text-center  max-w-sm"
+              className="bg-gray-900 shadow-lg border border-gray-300 rounded-2xl p-8 text-center  max-w-sm"
               onSubmit={handleSubmit}
             >
-              <span className="text-black text-2xl font-medium">
+              <span className="text-white text-2xl font-medium">
                 Upload your file
               </span>
-              <p className="mt-3 text-sm text-gray-600">
+              <p className="mt-3 text-sm text-gray-300">
                 File should be a PDF or DOCX file
               </p>
               <label
                 htmlFor="file-input"
-                className="mt-8 flex flex-col items-center justify-center gap-3 p-4 rounded-lg border-2 border-dashed border-blue-300 text-gray-700 cursor-pointer transition-all duration-200 hover:bg-blue-100 hover:border-gray-600 "
+                className="mt-8 flex flex-col items-center justify-center gap-3 p-4 rounded-lg border-2 border-dashed border-blue-300 text-gray-700 cursor-pointer transition-all duration-200 hover:bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 hover:border-gray-600 "
               >
-                <span className="text-lg font-bold text-gray-700 hover:text-gray-800">
+                <span className="text-lg font-bold text-gray-200 hover:text-gray-800">
                   Drop files here
                 </span>
                 <span>or</span>
@@ -88,7 +88,7 @@ export default function UploadForm() {
                   accept=".pdf,.docx"
                   required
                   id="file-input"
-                  className="block w-full max-w-xs text-gray-700 p-2 bg-white border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:py-2 file:px-4 file:rounded-lg file:border-none file:bg-blue-600 file:text-white file:font-medium file:cursor-pointer file:transition-all file:duration-200 hover:file:bg-blue-700"
+                  className="block w-full max-w-xs text-gray-700 p-2 bg-white border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 file:py-2 file:px-4 file:rounded-lg file:border-none file:bg-blue-600 file:text-white file:font-medium file:cursor-pointer file:transition-all file:duration-200 hover:file:bg-blue-700"
                   onChange={handleFileChange}
                 />
               </label>
