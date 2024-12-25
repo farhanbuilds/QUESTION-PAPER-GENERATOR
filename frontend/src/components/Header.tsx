@@ -9,7 +9,7 @@ export function Header() {
 }
 
 function ConditionalRendering(){
-  const location = useLocation();
+  const location = useLocation();  
 
   if (location.pathname === "/") {
     return <header className="fixed w-full top-0 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 z-50">

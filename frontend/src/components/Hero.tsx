@@ -16,9 +16,10 @@ export function Hero() {
             instantly.
           </p>
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            <button className="bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition-colors">
+            <a href="/upload"><button className="bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition-colors">
               Start Generating
             </button>
+            </a>
             <button className="border-2 border-blue-400 text-blue-400 px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-500/10 transition-colors">
               Watch Demo
             </button>
