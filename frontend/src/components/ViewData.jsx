@@ -136,7 +136,7 @@ const ViewData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/view/${dataId}`);
+        const response = await fetch(`https://question-paper-generator-cpwx.onrender.com/view/${dataId}`);
 
         if (response.ok) {
           const data = await response.json();
