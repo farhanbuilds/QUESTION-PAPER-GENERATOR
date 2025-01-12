@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // Configure multer for file uploads
-const upload = multer({ dest: '/tmp/uploads' });
+const upload = multer({ dest: '/tempFolder' });
 
 
 // Function to handle PDF files
@@ -100,7 +100,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const structuredData = parseTextToStructuredData(extractedData);
 
     // Save the structured data in a session or database for later retrieval
-    const dataId = Date.now();  // You can use a unique ID or any method to store data
+    const dataId = Date.now();  // a unique ID to store data
     fs.writeFileSync(path.join(__dirname, 'data', `${dataId}.json`), JSON.stringify(structuredData)); // Save data
 
     // Return the dataId for frontend redirection

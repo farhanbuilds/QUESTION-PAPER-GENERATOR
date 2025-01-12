@@ -2,7 +2,7 @@ const express = require('express');
 const { handleFileUpload } = reuire('./controllers/extractData');
 const multer = require('multer');
 
-const upload = multer({dest:'tmp/uploads/' });
+const upload = multer({dest:'tempFolder/' });
 
 const router = express.Router();
 
