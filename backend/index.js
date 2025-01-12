@@ -125,6 +125,7 @@ app.get('/view/:dataId', (req, res) => {
   if (fs.existsSync(dataFilePath)) {
     const structuredData = JSON.parse(fs.readFileSync(dataFilePath, 'utf-8'));
     res.json({ structuredData });  // Send the structured data back to the frontend
+    console.log("structured data sent to front end");
   } else {
     res.status(404).send('Data not found');
   }
