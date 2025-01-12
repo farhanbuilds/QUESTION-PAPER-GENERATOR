@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // Configure multer for file uploads
-const upload = multer({ dest: '/tempFolder' });
+const upload = multer({ dest: '/uploads' });
 
 
 // Function to handle PDF files
