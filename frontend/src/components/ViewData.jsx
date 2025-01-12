@@ -140,6 +140,7 @@ const ViewData = () => {
 
         if (response.ok) {
           const data = await response.json();
+          console.log('Fetched Data:', data);
           setStructuredData(data.structuredData); // Set the fetched data
         } else {
           setError("Data not found or server error");
