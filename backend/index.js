@@ -4,7 +4,7 @@ const pdfParse = require('pdf-parse');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const docx = require('docx'); // Import docx handling package if not already imported
+const docx = require('docx'); 
 const mammoth = require('mammoth');
 
 const app = express();
@@ -18,9 +18,18 @@ app.use(express.json());
 // Serve the React frontend (build folder)
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
-// Configure multer for file uploads
-const upload = multer({ dest: path.join(__dirname, 'uploads') });
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+// Configure multer for file uploads with the writable 'uploads' directory
+const upload = multer({ dest: uploadsDir });
 
 // Function to handle PDF files
 async function handlePDF(filePath) {
@@ -99,9 +108,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     // Parse the extracted text into structured data
     const structuredData = parseTextToStructuredData(extractedData);
 
-    // Save the structured data in a session or database for later retrieval
+    // Save the structured data in the 'data' folder
     const dataId = Date.now();  // a unique ID to store data
-    fs.writeFileSync(path.join(__dirname, 'data', `${dataId}.json`), JSON.stringify(structuredData)); // Save data
+    fs.writeFileSync(path.join(dataDir, `${dataId}.json`), JSON.stringify(structuredData)); // Save data
 
     // Return the dataId for frontend redirection
     res.json({ dataId });
@@ -115,7 +124,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     }
   }
 });
-
 
 // Route to serve the structured data page
 app.get('/view/:dataId', (req, res) => {
