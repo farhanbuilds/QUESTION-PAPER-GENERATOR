@@ -4,10 +4,9 @@ const pdfParse = require('pdf-parse');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const docx = require('docx'); 
-const mammoth = require('mammoth');
 
 const app = express();
+const port = process.env.PORT || 5000;
 
 // Middleware to allow cross-origin requests
 app.use(cors());
@@ -38,116 +37,38 @@ async function handlePDF(filePath) {
   return pdfData.text; // Return the text extracted from the PDF
 }
 
-// Function to handle DOCX files
-async function handleDocx(filePath) {
-  try {
-    // Read the DOCX file
-    const dataBuffer = fs.readFileSync(filePath);
-    const { value } = await mammoth.extractRawText({ buffer: dataBuffer });
-    return value;  // Return the extracted text from the DOCX file
-  } catch (err) {
-    throw new Error(`Error extracting DOCX content: ${err.message}`);
-  }
-}
-
-// Function to parse text into structured data
-function parseTextToStructuredData(text) {
-  const units = [];
-  const unitPattern = /Unit (\d+)(.*?)Unit (\d+|$)/gs;
-  let match;
-  
-  while ((match = unitPattern.exec(text)) !== null) {
-    const unitNumber = match[1];
-    const questionsAnswersText = match[2].trim();
-    const questions = [];
-
-    // Split questions and answers by line
-    const lines = questionsAnswersText.split('\n');
-    lines.forEach(line => {
-      const parts = line.split('?');
-      if (parts.length === 2) {
-        questions.push({
-          question: parts[0].trim() + '?',
-          answer: parts[1].trim()
-        });
-      }
-    });
-
-    units.push({
-      unit: unitNumber,
-      questions: questions
-    });
-  }
-  console.log(units);
-  return units;
-}
-
-// File upload endpoint
+// Endpoint to handle file upload
 app.post('/upload', upload.single('file'), async (req, res) => {
-  const file = req.file;
-  console.log('Uploaded file:', file);
-
-  if (!file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-
-  const filePath = path.resolve(__dirname, file.path);
-  const fileType = file.mimetype;
-  let extractedData;
-
   try {
-    // Process file based on type
-    if (fileType === 'application/pdf') {
-      extractedData = await handlePDF(filePath);
-    } else if (fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      extractedData = await handleDocx(filePath);
-    } else {
-      throw new Error(`Unsupported file type: ${fileType}`);
-    }
+    const filePath = req.file.path;
+    const pdfText = await handlePDF(filePath);
 
-    // Parse the extracted text into structured data
-    const structuredData = parseTextToStructuredData(extractedData);
+    // Save the extracted data to a file or database
+    const dataId = Date.now().toString();
+    const dataFilePath = path.join(dataDir, `${dataId}.json`);
+    fs.writeFileSync(dataFilePath, JSON.stringify({ structuredData: pdfText }));
 
-    // Save the structured data in the 'data' folder
-    const dataId = Date.now();  // a unique ID to store data
-    fs.writeFileSync(path.join(dataDir, `${dataId}.json`), JSON.stringify(structuredData)); // Save data
-
-    // Return the dataId for frontend redirection
     res.json({ dataId });
-  } catch (err) {
-    console.error('Error processing file:', err.message);
-    res.status(500).json({ error: `Error processing file: ${err.message}` });
-  } finally {
-    // Clean up uploaded file
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+  } catch (error) {
+    console.error('Error processing PDF:', error);
+    res.status(500).json({ error: 'Failed to process PDF' });
   }
 });
 
-// Route to serve the structured data page
+// Endpoint to fetch processed data
 app.get('/view/:dataId', (req, res) => {
   const dataId = req.params.dataId;
-  const dataFilePath = path.join(__dirname, 'data', `${dataId}.json`);
-  
+  const dataFilePath = path.join(dataDir, `${dataId}.json`);
+
   if (fs.existsSync(dataFilePath)) {
-    const structuredData = JSON.parse(fs.readFileSync(dataFilePath, 'utf-8'));
-    res.json({ structuredData });  // Send the structured data back to the frontend
-    console.log("structured data sent to front end");
+    const data = fs.readFileSync(dataFilePath);
+    res.json(JSON.parse(data));
   } else {
-    res.status(404).send('Data not found');
+    res.status(404).json({ error: 'Data not found' });
   }
-});
-
-
-
-// Fallback route to serve the React frontend (Single Page App)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
 });
 
 // Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
