@@ -152,7 +152,7 @@ const ViewData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/view/${dataId}`);
+        const response = await fetch(`https://question-paper-generator-cpwx.onrender.com/view/${dataId}`);
 
         if (response.ok) {
           const data = await response.json();
@@ -201,7 +201,7 @@ const ViewData = () => {
         <ul className="list-decimal font-normal ml-6">
           {partA.map((q, index) => (
             <li key={index}>
-              <p>{q.question}</p>
+              <p>{q.question}({q.bloomsLevel})</p>
               <br />
               <br />
             </li>
@@ -218,8 +218,9 @@ const ViewData = () => {
               {index % 2 === 0 && (
                 <>
                 <ul>
+
                   <li>
-                    <p>{Math.floor(index / 2) + 1}. {q.question}</p>
+                    <p>{Math.floor(index / 2) + 1}. {q.question}({q.bloomsLevel})</p>
                   </li>
                 </ul>
                   <p className="ml-10">(OR)</p>
@@ -228,7 +229,7 @@ const ViewData = () => {
               {index % 2 !== 0 && (
                 <>
                   <li className="list-none ml-5">
-                    <p>{q.question}</p>
+                    <p>{q.question}({q.bloomsLevel})</p>
                   </li>
                   <br />
                 </>

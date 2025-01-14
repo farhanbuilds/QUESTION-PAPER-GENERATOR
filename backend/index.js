@@ -6,16 +6,14 @@ const path = require('path');
 const cors = require('cors');
 const docx = require('docx'); 
 const mammoth = require('mammoth');
+const natural = require('natural');
+const tokenizer = new natural.WordTokenizer();
 
 const app = express();
 
 // Middleware to allow cross-origin requests
 app.use(cors());
-
-// Middleware to parse JSON requests
 app.use(express.json());
-
-// Serve the React frontend (build folder)
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -28,61 +26,104 @@ if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// Configure multer for file uploads with the writable 'uploads' directory
 const upload = multer({ dest: uploadsDir });
 
-// Function to handle PDF files
-async function handlePDF(filePath) {
+const handlePDF = async (filePath) => {
   const dataBuffer = fs.readFileSync(filePath);
-  const pdfData = await pdfParse(dataBuffer);
-  return pdfData.text; // Return the text extracted from the PDF
-}
+  const data = await pdfParse(dataBuffer);
+  return data.text;
+};
 
-// Function to handle DOCX files
-async function handleDocx(filePath) {
-  try {
-    // Read the DOCX file
-    const dataBuffer = fs.readFileSync(filePath);
-    const { value } = await mammoth.extractRawText({ buffer: dataBuffer });
-    return value;  // Return the extracted text from the DOCX file
-  } catch (err) {
-    throw new Error(`Error extracting DOCX content: ${err.message}`);
-  }
-}
+const handleDocx = async (filePath) => {
+  const { value } = await mammoth.extractRawText({ path: filePath });
+  return value;
+};
 
-// Function to parse text into structured data
-function parseTextToStructuredData(text) {
-  const units = [];
-  const unitPattern = /Unit (\d+)(.*?)Unit (\d+|$)/gs;
-  let match;
-  
-  while ((match = unitPattern.exec(text)) !== null) {
-    const unitNumber = match[1];
-    const questionsAnswersText = match[2].trim();
-    const questions = [];
+// Bloom's Level Keyword Mapping
+function handleBloomsLevel(question) {
+  const bloomsKeywords = {
+    remembering: [
+      "list", "define", "recall", "identify", "name", "label", "state", "match", "repeat",
+      "what", "who", "where", "when", "which", "how much", "how many"
+    ],
+    understanding: [
+      "describe", "explain", "summarize", "paraphrase", "classify", "compare", "contrast",
+      "interpret", "discuss", "rephrase", "report", "translate", "why", "how", "justify"
+    ],
+    applying: [
+      "apply", "use", "solve", "demonstrate", "construct", "implement", "illustrate", "operate",
+      "show", "execute", "calculate", "complete", "examine", "modify", "predict"
+    ],
+    analyzing: [
+      "analyze", "compare", "contrast", "differentiate", "distinguish", "examine", "experiment",
+      "question", "test", "criticize", "debate", "diagram", "inspect", "investigate"
+    ],
+    evaluating: [
+      "evaluate", "assess", "judge", "argue", "defend", "critique", "select", "support",
+      "value", "appraise", "conclude", "justify", "prioritize", "recommend"
+    ],
+    creating: [
+      "create", "design", "develop", "formulate", "invent", "compose", "construct", "plan",
+      "produce", "propose", "arrange", "assemble", "collect", "compile", "organize"
+    ]
+  };
 
-    // Split questions and answers by line
-    const lines = questionsAnswersText.split('\n');
-    lines.forEach(line => {
-      const parts = line.split('?');
-      if (parts.length === 2) {
-        questions.push({
-          question: parts[0].trim() + '?',
-          answer: parts[1].trim()
-        });
+  const tokens = tokenizer.tokenize(question.toLowerCase()).slice(0, 4);
+
+  for (const [level, keywords] of Object.entries(bloomsKeywords)) {
+    for (const keyword of keywords) {
+      if (tokens.includes(keyword)) {
+        console.log(`Question: "${question}" matched Bloom's level: ${level}`); // Add logging
+        return level;
       }
-    });
-
-    units.push({
-      unit: unitNumber,
-      questions: questions
-    });
+    }
   }
-  console.log(units);
-  return units;
+  console.log(`Question: "${question}" did not match any Bloom's level`); // Add logging
+  return 'unknown';
 }
 
-// File upload endpoint
+const parseTextToStructuredData = (extractedData) => {
+  const units = [];
+  const unitRegex = /UNIT (\d+)/i;
+  const questionRegex = /^(What|How|Why|Describe|Explain|Compare|Name|List|Define|State|Identify|Summarize|Discuss|Evaluate|Analyze|Create|Design|Formulate|Develop|Construct|Propose|Arrange|Assemble|Collect|Compile|Organize|Apply|Use|Solve|Demonstrate|Implement|Illustrate|Operate|Show|Execute|Calculate|Complete|Examine|Modify|Predict|Differentiate|Distinguish|Experiment|Question|Test|Criticize|Debate|Diagram|Inspect|Investigate|Assess|Judge|Argue|Defend|Critique|Select|Support|Value|Appraise|Conclude|Justify|Prioritize|Recommend)\b.*$/i;
+  const answerRegex = /^Answer:(.*)$/i;
+
+  let currentUnit = null;
+  let currentQuestion = null;
+
+  extractedData.split('\n').forEach((line) => {
+    line = line.trim(); // Trim whitespace from the line
+    console.log('Processing line:', line); // Add logging
+
+    const unitMatch = line.match(unitRegex);
+    const questionMatch = line.match(questionRegex);
+    const answerMatch = line.match(answerRegex);
+
+    if (unitMatch) {
+      console.log('Found unit:', unitMatch[1]); // Add logging
+      currentUnit = {
+        unit: unitMatch[1],
+        questions: []
+      };
+      units.push(currentUnit);
+    } else if (questionMatch && currentUnit && !answerMatch) {
+      console.log('Found question:', questionMatch[0].trim()); // Add logging
+      currentQuestion = {
+        question: questionMatch[0].trim(),
+        answer: '',
+        bloomsLevel: handleBloomsLevel(questionMatch[0].trim())
+      };
+      currentUnit.questions.push(currentQuestion);
+    } else if (answerMatch && currentQuestion) {
+      console.log('Found answer:', answerMatch[1].trim()); // Add logging
+      currentQuestion.answer = answerMatch[1].trim();
+    }
+  });
+
+  console.log('Parsed units:', JSON.stringify(units, null, 2)); // Add logging
+  return units;
+};
+
 app.post('/upload', upload.single('file'), async (req, res) => {
   const file = req.file;
   console.log('Uploaded file:', file);
@@ -96,7 +137,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   let extractedData;
 
   try {
-    // Process file based on type
     if (fileType === 'application/pdf') {
       extractedData = await handlePDF(filePath);
     } else if (fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
@@ -105,43 +145,32 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       throw new Error(`Unsupported file type: ${fileType}`);
     }
 
-    // Parse the extracted text into structured data
+    console.log('Extracted data:', extractedData); // Add logging
     const structuredData = parseTextToStructuredData(extractedData);
 
-    // Save the structured data in the 'data' folder
-    const dataId = Date.now();  // a unique ID to store data
-    fs.writeFileSync(path.join(dataDir, `${dataId}.json`), JSON.stringify(structuredData)); // Save data
+    const dataId = Date.now();
+    fs.writeFileSync(path.join(dataDir, `${dataId}.json`), JSON.stringify(structuredData));
 
-    // Return the dataId for frontend redirection
     res.json({ dataId });
-  } catch (err) {
-    console.error('Error processing file:', err.message);
-    res.status(500).json({ error: `Error processing file: ${err.message}` });
-  } finally {
-    // Clean up uploaded file
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Route to serve the structured data page
+// Route to serve structured data
 app.get('/view/:dataId', (req, res) => {
   const dataId = req.params.dataId;
-  const dataFilePath = path.join(__dirname, 'data', `${dataId}.json`);
-  
+  const dataFilePath = path.join(dataDir, `${dataId}.json`);
+
   if (fs.existsSync(dataFilePath)) {
     const structuredData = JSON.parse(fs.readFileSync(dataFilePath, 'utf-8'));
-    res.json({ structuredData });  // Send the structured data back to the frontend
-    console.log("structured data sent to front end");
+    res.json({ structuredData });
   } else {
     res.status(404).send('Data not found');
   }
 });
 
-
-
-// Fallback route to serve the React frontend (Single Page App)
+// Serve React frontend
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
 });
