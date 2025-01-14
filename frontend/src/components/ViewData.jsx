@@ -70,7 +70,7 @@ const ViewData = () => {
       }
     });
   
-    // Part B: 5 questions in total
+    // Part B: 10 questions in total
     const allUnitsQuestions = data.flatMap((unit) => unit.questions || []); // Combine all questions from all units
     const pickedUnits = {}; // To track questions picked per unit in Part B
   
@@ -80,7 +80,7 @@ const ViewData = () => {
   
       // Pick questions round-robin style from all units
       if (
-        totalQuestionsInPartB < 5 &&
+        totalQuestionsInPartB < 10 &&
         pickedUnits[unitId] < allUnitsQuestions.length
       ) {
         partB.push(question); // Add question to Part B
@@ -122,11 +122,27 @@ const ViewData = () => {
     doc.text("Part B:", 10, y + 10);
     y += 20;
     partB.forEach((q, index) => {
-      doc.text(`${index + 1}. ${q.question}`, 10, y);
-      y += 14;
-      if (y > 280) {
-        doc.addPage();
-        y = 10;
+      if (index % 2 === 0) {
+        doc.text(`${Math.floor(index / 2) + 1}. ${q.question}`, 10, y);
+        y += 14;
+        if (y > 280) {
+          doc.addPage();
+          y = 10;
+        }
+        doc.text("(OR)", 45, y);
+        y += 14;
+        if (y > 280) {
+          doc.addPage();
+          y = 10;
+        }
+      } else {
+        doc.text(`${q.question}`, 15, y);
+        y += 14;
+        if (y > 280) {
+          doc.addPage();
+          y = 10;
+        }
+        y += 10; // Add extra space after each pair
       }
     });
 
@@ -136,7 +152,7 @@ const ViewData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://question-paper-generator-cpwx.onrender.com/view/${dataId}`);
+        const response = await fetch(`http://localhost:5000/view/${dataId}`);
 
         if (response.ok) {
           const data = await response.json();
@@ -185,7 +201,7 @@ const ViewData = () => {
         <ul className="list-decimal font-normal ml-6">
           {partA.map((q, index) => (
             <li key={index}>
-              <strong>{q.question}</strong>
+              <p>{q.question}</p>
               <br />
               <br />
             </li>
@@ -198,11 +214,26 @@ const ViewData = () => {
         <h2 className="text-2xl font-bold mb-3">Part B: </h2>
         <ul className="list-decimal font-normal ml-6">
           {partB.map((q, index) => (
-            <li key={index}>
-              <strong>{q.question}</strong>
-              <br />
-              <br />
-            </li>
+            <React.Fragment key={index}>
+              {index % 2 === 0 && (
+                <>
+                <ul>
+                  <li>
+                    <p>{Math.floor(index / 2) + 1}. {q.question}</p>
+                  </li>
+                </ul>
+                  <p className="ml-10">(OR)</p>
+                </>
+              )}
+              {index % 2 !== 0 && (
+                <>
+                  <li className="list-none ml-5">
+                    <p>{q.question}</p>
+                  </li>
+                  <br />
+                </>
+              )}
+            </React.Fragment>
           ))}
         </ul>
       </div>

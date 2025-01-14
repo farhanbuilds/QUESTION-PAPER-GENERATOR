@@ -35,7 +35,7 @@ export default function UploadForm() {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('https://question-paper-generator-cpwx.onrender.com/upload', formData, {
+      const response = await axios.post('http://localhost:5000/upload', formData, {
         headers: { 'Content-type': 'multipart/form-data' },
       });
 
