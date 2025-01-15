@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useLocation} from "react-router-dom";
 import "./App.css";
 import UploadForm from "./components/UploadForm.tsx";
 import ViewData from "./components/ViewData.jsx";
@@ -11,7 +11,7 @@ function App() {
     <Router>
       <div>
         <Header />
-        <FloatingNav />
+        <ConditionalFloatingNav />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/upload" element={<UploadForm />} />
@@ -21,7 +21,9 @@ function App() {
     </Router>
   );
 }
-
-
+function ConditionalFloatingNav() {
+  const location = useLocation();
+  return location.pathname === '/' ? <FloatingNav /> : null;
+}
 
 export default App;

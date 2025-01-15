@@ -12,7 +12,7 @@ function ConditionalRendering(){
   const location = useLocation();
 
   if (location.pathname === "/") {
-    return <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-sm rounded-full px-6 py-2 flex justify-evenly items-center gap-8 shadow-lg border  border-gray-800 z-50">
+    return <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-0 rounded-full px-6 py-2 flex justify-evenly items-center gap-8 shadow-lg border  border-gray-800 z-50">
     <a href="#hero" className="text-gray-400 hover:text-blue-400 transition-colors flex flex-col items-center gap-1">
       <Home className="h-5 w-5" />
       <span className="text-xs">Home</span>

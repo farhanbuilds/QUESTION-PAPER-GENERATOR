@@ -33,7 +33,7 @@ export function Hero() {
             <div className="p-4">
               <Clock className="h-8 w-8 text-blue-400 mx-auto mb-3" />
               <h3 className="font-semibold text-white mb-2">Time-Saving</h3>
-              <p className="text-gray-300">Generate papers in less than 5 minutes</p>
+              <p className="text-gray-300">Generate papers in less than 1 minutes</p>
             </div>
             <div className="p-4">
               <Shield className="h-8 w-8 text-blue-400 mx-auto mb-3" />
