@@ -1,109 +1,184 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Upload, ChevronDown, FileUp, Sparkles } from 'lucide-react';
+import Footer from './Footer.jsx';
+
+const bloomLevels = [
+  { value: 'remember', label: 'Remember', description: 'Recall facts and basic concepts' },
+  { value: 'understand', label: 'Understand', description: 'Explain ideas or concepts' },
+  { value: 'apply', label: 'Apply', description: 'Use information in new situations' },
+  { value: 'analyze', label: 'Analyze', description: 'Draw connections among ideas' },
+  { value: 'evaluate', label: 'Evaluate', description: 'Justify a stand or decision' },
+  { value: 'create', label: 'Create', description: 'Produce new or original work' }
+];
 
 export default function UploadForm() {
-  const [file, setFile] = useState(null);
-  const [error, setError] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [loading, setLoading] = useState(false);  // Loading state
+  const [showIncompletePopup, setShowIncompletePopup] = useState(false); // Popup state
+  const [showFilePopup, setShowFilePopup] = useState(false); // Popup state
   const navigate = useNavigate();
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files ? e.target.files[0] : null;
 
     console.log('selected file', selectedFile);
     if (selectedFile && (selectedFile.type !== 'application/pdf' && selectedFile.type !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
-      setError('Please upload a valid PDF or DOCX file');
+      setShowFilePopup(true); // Show popup if file type is invalid
       setFile(null);  // Clear the file input
     } else {
-      setError(''); // Clear any previous errors
       setFile(selectedFile);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!file) {
-      setError('Please Upload a File!');
+    if (!file || !selectedLevel) {
+      setShowIncompletePopup(true); // Show popup if file or level is not selected
       return;
     }
-
+    console.log('Generate content with:', { file, level: selectedLevel });
     setLoading(true);  // Set loading to true
-
+  
     const formData = new FormData();
     formData.append('file', file);
-
+    formData.append('level', selectedLevel); // Include the selected Bloom's level
+  
     try {
       const response = await axios.post('https://question-paper-generator-cpwx.onrender.com/upload', formData, {
-        headers: { 'Content-type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
-
-      if (response.data && response.data.dataId) {
-        // Redirect to the new page where data can be displayed
-        navigate(`/view/${response.data.dataId}`);
-      } else {
-        setError('Failed to extract data from the file');
+      if (response.status === 200) {
+        const data = response.data;
+        const dataId = data.dataId; // Assuming the response contains a dataId
+        navigate(`/view/${dataId}?level=${selectedLevel}`); // Pass the selected level as a query parameter    
+        console.error('Upload failed');
       }
-    } catch (err) {
-      setError(`Failed to upload file: ${err.response?.data?.error || err.message}`);
+    } catch (error) {
+      console.error('Error uploading file:', error);
     } finally {
-      setLoading(false);  // Reset loading state
+      setLoading(false);  // Set loading to false after upload is complete
     }
   };
 
   return (
     <>
-      <div className="w-screen h-screen flex justify-center items-center  bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <div className="">
-          <h1 className="text-white font-bold text-2xl text-center">
-            Generate Question Paper by uploading Question Bank
-          </h1>
-
-          <p className="text-gray-300 text-center mt-5">
-            Upload a question bank pdf or docx file to generate a question
-            paper
-          </p>
-          <div className="flex items-center flex-col gap-2 justify-center max-w-full mt-5 ">
-            <form
-              className="bg-gray-900 shadow-lg border border-gray-300 rounded-2xl p-8 text-center  max-w-sm"
-              onSubmit={handleSubmit}
-            >
-              <span className="text-white text-2xl font-medium">
-                Upload your file
-              </span>
-              <p className="mt-3 text-sm text-gray-300">
-                File should be a PDF or DOCX file
-              </p>
-              <label
-                htmlFor="file-input"
-                className="mt-8 flex flex-col items-center justify-center gap-3 p-4 rounded-lg border-2 border-dashed border-blue-300 text-gray-700 cursor-pointer transition-all duration-200 hover:bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 hover:border-gray-600 "
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 flex flex-col justify-center">
+    <div className="flex flex-col justify-center">
+      <div className="container mx-auto px-4 py-16 flex-grow">
+        <div className="max-w-2xl mx-auto">
+          {/* Main Content */}
+          <h1 className="mb-5 text-4xl font-bold text-center">Question Paper Generator</h1>
+          <p className="text-lg text-gray-600 font-medium mb-8 text-center">Upload your Question Bank PDF or DOCX and select Bloom's level to generate question paper</p>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8">
+            {/* File Upload */}
+            <div className="mb-8">
+              <label 
+                htmlFor="file-upload"
+                className="block w-full cursor-pointer"
               >
-                <span className="text-lg font-bold text-gray-200 hover:text-gray-800">
-                  Drop files here
-                </span>
-                <span>or</span>
+                <div className="border-2 border-dashed border-indigo-200 rounded-xl p-8 transition-colors hover:border-indigo-300 text-center">
+                  <Upload className="w-12 h-12 mx-auto mb-4 text-indigo-500" />
+                  <div className="text-lg font-medium text-gray-700 mb-2">
+                    {file ? file.name : 'Choose a file to upload'}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Drop your file here or click to browse
+                  </p>
+                </div>
                 <input
+                  id="file-upload"
                   type="file"
-                  accept=".pdf,.docx"
-                  required
-                  id="file-input"
-                  className="block w-full max-w-xs text-gray-700 p-2 bg-white border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-blue-900 file:py-2 file:px-4 file:rounded-lg file:border-none file:bg-blue-600 file:text-white file:font-medium file:cursor-pointer file:transition-all file:duration-200 hover:file:bg-blue-700"
+                  className="hidden"
                   onChange={handleFileChange}
                 />
               </label>
-              <button
-                type="submit"
-                className="bg-blue-700 p-2 text-white text-xl rounded-xl mt-5"
-                disabled={loading}
+            </div>
+
+            {/* Custom Select */}
+            <div className="mb-8 relative">
+              <div 
+                className="border rounded-xl p-4 cursor-pointer flex items-center justify-between"
+                onClick={() => setIsSelectOpen(!isSelectOpen)}
               >
-                {loading ? 'Uploading...' : 'Generate'}
-              </button>
-            </form>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-          </div>
+                <div className="flex items-center gap-3">
+                  <FileUp className="text-indigo-500" />
+                  <span className={selectedLevel ? 'text-gray-800' : 'text-gray-400'}>
+                    {selectedLevel ? bloomLevels.find(level => level.value === selectedLevel)?.label : 'Select Bloom\'s Level'}
+                  </span>
+                </div>
+                <ChevronDown className={`transition-transform ${isSelectOpen ? 'rotate-180' : ''}`} />
+              </div>
+              {/* Dropdown */}
+              {isSelectOpen && (
+                <div className="absolute w-full mt-2 bg-white border rounded-xl shadow-lg z-10">
+                  {bloomLevels.map((level) => (
+                    <div
+                      key={level.value}
+                      className="p-4 hover:bg-indigo-50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setSelectedLevel(level.value);
+                        setIsSelectOpen(false);
+                      }}
+                    >
+                      <div className="font-medium text-gray-800">{level.label}</div>
+                      <div className="text-sm text-gray-500">{level.description}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Generate Button */}
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="w-full bg-indigo-600 text-white rounded-xl py-4 px-6 flex items-center justify-center gap-2 hover:bg-indigo-700 transition-colors font-medium"
+            >
+              <Sparkles className="w-5 h-5" />
+            { loading ? "Uploading..." : "Generate Content"}
+            </button>
+          </form>
         </div>
       </div>
+      {/* Custom Popup */}
+      {showIncompletePopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-8 shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Incomplete Form</h2>
+            <p className="mb-4">Please upload a file and select a Bloom's level before proceeding.</p>
+            <button
+              onClick={() => setShowIncompletePopup(false)}
+              className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      {showFilePopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-8 shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Invalid File Type</h2>
+            <p className="mb-4">Please upload a PDF or DOCX.</p>
+            <button
+              onClick={() => setShowFilePopup(false)}
+              className="bg-indigo-600 text-white rounded-lg px-4 py-2 hover:bg-indigo-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+    <Footer />
+    </div>
     </>
   );
 }

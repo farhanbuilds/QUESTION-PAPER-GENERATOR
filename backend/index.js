@@ -42,27 +42,27 @@ const handleDocx = async (filePath) => {
 // Bloom's Level Keyword Mapping
 function handleBloomsLevel(question) {
   const bloomsKeywords = {
-    remembering: [
+    remember: [
       "list", "define", "recall", "identify", "name", "label", "state", "match", "repeat",
       "what", "who", "where", "when", "which", "how much", "how many"
     ],
-    understanding: [
+    understand: [
       "describe", "explain", "summarize", "paraphrase", "classify", "compare", "contrast",
       "interpret", "discuss", "rephrase", "report", "translate", "why", "how", "justify"
     ],
-    applying: [
+    apply: [
       "apply", "use", "solve", "demonstrate", "construct", "implement", "illustrate", "operate",
       "show", "execute", "calculate", "complete", "examine", "modify", "predict"
     ],
-    analyzing: [
+    analyze: [
       "analyze", "compare", "contrast", "differentiate", "distinguish", "examine", "experiment",
       "question", "test", "criticize", "debate", "diagram", "inspect", "investigate"
     ],
-    evaluating: [
+    evaluate: [
       "evaluate", "assess", "judge", "argue", "defend", "critique", "select", "support",
       "value", "appraise", "conclude", "justify", "prioritize", "recommend"
     ],
-    creating: [
+    create: [
       "create", "design", "develop", "formulate", "invent", "compose", "construct", "plan",
       "produce", "propose", "arrange", "assemble", "collect", "compile", "organize"
     ]

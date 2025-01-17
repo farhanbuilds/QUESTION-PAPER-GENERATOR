@@ -10,7 +10,7 @@ function App() {
   return (
     <Router>
       <div>
-        <Header />
+        <ConditionalHeader />
         <ConditionalFloatingNav />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -24,6 +24,10 @@ function App() {
 function ConditionalFloatingNav() {
   const location = useLocation();
   return location.pathname === '/' ? <FloatingNav /> : null;
+}
+function ConditionalHeader() {
+  const location = useLocation();
+  return location.pathname === '/upload' ?  null : <Header />;
 }
 
 export default App;

@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { jsPDF } from "jspdf";
 
 const ViewData = () => {
   const { dataId } = useParams(); // Get the dataId from the URL
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const selectedBloomsLevel = queryParams.get("level"); // Get the Bloom's level from the URL
+
   const [structuredData, setStructuredData] = useState(null);
   const [loading, setLoading] = useState(true); // To handle loading state
   const [error, setError] = useState(null); // To handle any errors
@@ -16,11 +20,11 @@ const ViewData = () => {
     let totalQuestionsInPartB = 0;
 
     let unitData = {};
-    data.forEach((entry) =>{
+    data.forEach((entry) => {
       if (!unitData[entry.unit]) {
         unitData[entry.unit] = 0;
       }
-      
+
       unitData[entry.unit]++;
     });
 
@@ -31,8 +35,7 @@ const ViewData = () => {
     let selectedQuestions = [];
     let unitQuestionsMap = {};
 
-
-    data.forEach(item => {
+    data.forEach((item) => {
       if (!unitQuestionsMap[item.unit]) {
         unitQuestionsMap[item.unit] = new Set();
       }
@@ -42,26 +45,28 @@ const ViewData = () => {
       }
     });
 
-    for(let unit in unitQuestionsMap) {
-      Array.from(unitQuestionsMap[unit]).forEach(questions => {
-        selectedQuestions.push({unit: unit, question: questions});
+    for (let unit in unitQuestionsMap) {
+      Array.from(unitQuestionsMap[unit]).forEach((questions) => {
+        selectedQuestions.push({ unit: unit, question: questions });
       });
     }
 
-    console.log("selected ",selectedQuestions);
-    selectedQuestions.forEach(item => {
+    console.log("selected ", selectedQuestions);
+    selectedQuestions.forEach((item) => {
       console.log(item.question);
     });
 
-    // Part A: 2 questions per unit
+    // Part A: 2 questions per unit, filtered by Bloom's level
     data.forEach((unit) => {
       const unitId = unit.unit; // Identify the unit
       const unitQuestions = unit.questions || []; // Ensure unit has questions
       partAQuestionCount[unitId] = 0; // Initialize count for this unit
-      
-      
+
       for (let i = 0; i < unitQuestions.length; i++) {
-        if (partAQuestionCount[unitId] < 2) {
+        if (
+          partAQuestionCount[unitId] < 2 &&
+          unitQuestions[i].bloomsLevel === selectedBloomsLevel
+        ) {
           partA.push(unitQuestions[i]); // Add question to Part A
           partAQuestionCount[unitId] += 1; // Increment count for this unit
         } else {
@@ -69,15 +74,15 @@ const ViewData = () => {
         }
       }
     });
-  
+
     // Part B: 10 questions in total
     const allUnitsQuestions = data.flatMap((unit) => unit.questions || []); // Combine all questions from all units
     const pickedUnits = {}; // To track questions picked per unit in Part B
-  
+
     allUnitsQuestions.forEach((question) => {
       const unitId = question.unit || "unknown"; // Ensure unitId exists
       if (!pickedUnits[unitId]) pickedUnits[unitId] = 0; // Initialize if not exists
-  
+
       // Pick questions round-robin style from all units
       if (
         totalQuestionsInPartB < 10 &&
@@ -88,11 +93,10 @@ const ViewData = () => {
         totalQuestionsInPartB++; // Increment total question count for Part B
       }
     });
-    console.log("paRT A",partA);
-    console.log("paRT b",partB);
+    console.log("paRT A", partA);
+    console.log("paRT b", partB);
     return { partA, partB };
   };
-  
 
   const generatePDF = () => {
     const { partA, partB } = processParts(structuredData);
@@ -156,7 +160,7 @@ const ViewData = () => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Fetched Data:', data);
+          console.log("Fetched Data:", data);
           setStructuredData(data.structuredData); // Set the fetched data
         } else {
           setError("Data not found or server error");
@@ -217,19 +221,23 @@ const ViewData = () => {
             <React.Fragment key={index}>
               {index % 2 === 0 && (
                 <>
-                <ul>
-
-                  <li>
-                    <p>{Math.floor(index / 2) + 1}. {q.question}({q.bloomsLevel})</p>
-                  </li>
-                </ul>
+                  <ul>
+                    <li>
+                      <p>
+                        {Math.floor(index / 2) + 1}. {q.question}(
+                        {q.bloomsLevel})
+                      </p>
+                    </li>
+                  </ul>
                   <p className="ml-10">(OR)</p>
                 </>
               )}
               {index % 2 !== 0 && (
                 <>
                   <li className="list-none ml-5">
-                    <p>{q.question}({q.bloomsLevel})</p>
+                    <p>
+                      {q.question}({q.bloomsLevel})
+                    </p>
                   </li>
                   <br />
                 </>

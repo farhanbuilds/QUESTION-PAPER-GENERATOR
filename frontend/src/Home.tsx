@@ -4,7 +4,8 @@ import { Hero } from './components/Hero.tsx';
 import { Features } from './components/Features.tsx';
 import { HowItWorks } from './components/HowItWorks.tsx';
 import { FloatingNav } from './components/FloatingNav.tsx';
-import { Contact } from './components/contact.tsx';
+// import { Contact } from './components/contact.tsx';
+import { WhyChooseUs } from './components/WhyChooseUs.tsx'
 
 export default function App() {
   return (
@@ -14,7 +15,7 @@ export default function App() {
         <div id="hero"><Hero /></div>
         <div id="features"><Features /></div>
         <div id="how-it-works"><HowItWorks /></div>
-        <div id="contact-us"><Contact /></div>
+        <div id="contact-us"><WhyChooseUs /></div>
       </main>
       <FloatingNav />
       <footer className="bg-black/50 text-gray-400 py-12">
