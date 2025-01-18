@@ -52,7 +52,7 @@ export default function UploadForm() {
     formData.append('levelB', selectedPartBLevel); // Include the selected Bloom's level for PART B
   
     try {
-      const response = await axios.post('https://question-paper-generator-cpwx.onrender.com/upload', formData, {
+      const response = await axios.post('http://localhost:5000/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

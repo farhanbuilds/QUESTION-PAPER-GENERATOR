@@ -103,25 +103,49 @@ const ViewData = () => {
   const generatePDF = () => {
     const { partA, partB } = processParts(structuredData);
     const doc = new jsPDF();
-    
+    const imgData = "";
     const pageWidth = doc.internal.pageSize.getWidth();
     // Add title
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(16);
-    const title = "Generated Question Paper";
-    const titleWidth = doc.getTextWidth(title);
-    doc.text(title, (pageWidth - titleWidth) / 2, 10);
+    doc.setFont("Times", "bold");
+    doc.setFontSize(18);
+
+    doc.addImage(imgData, "JPEG", 10, 15, 25, 25);
+
+    const title1 = "CMR COLLEGE OF ENGINEERING & TECHNOLOGY";
+    const title1Width = doc.getTextWidth(title1);
+    doc.text(title1, (pageWidth - title1Width) / 2, 15);
+
+    doc.setFontSize(14);
+    const title2 = "(UGC AUTONOOMUS)";
+    const title2Width = doc.getTextWidth(title2);
+    doc.text(title2, (pageWidth - title2Width) / 2, 25);
+
+    doc.text("Name: ..............", 10, 45);
+
+    const textWidthClass = doc.getTextWidth("Class: .............");
+    doc.text("Class: .............", pageWidth - textWidthClass - 10, 45);
+
+    doc.text("RollNo: ............", 10, 55);
+
+    const textWidthMarks = doc.getTextWidth("Max.Marks: 60");
+    doc.text("Class: .............", pageWidth - textWidthMarks - 10, 55);
+
+    const startX = 10;
+    const endX = pageWidth - 10;
+    const lineY = 60;
+
+    doc.line(startX, lineY, endX, lineY);
 
     // Add Part A
     doc.setFontSize(14);
-    doc.text("Part A:", 10, 20);
+    doc.text("Part A:", 10, 80);
 
     doc.setFontSize(12);
     const textWidthPartA = doc.getTextWidth("10 x 1 = 10");
-    doc.text("10 x 1 = 10", pageWidth - textWidthPartA - 10, 30);
+    doc.text("10 x 1 = 10", pageWidth - textWidthPartA - 10, 90);
 
     doc.setFont("Helvetica", "normal");
-    let y = 40;
+    let y = 100;
     partA.forEach((q, index) => {
       doc.text(`${index + 1}. ${q.question}`, 10, y);
       y += 14;
@@ -170,7 +194,7 @@ const ViewData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://question-paper-generator-cpwx.onrender.com/view/${dataId}`);
+        const response = await fetch(`http://localhost:5000/view/${dataId}`);
 
         if (response.ok) {
           const data = await response.json();
