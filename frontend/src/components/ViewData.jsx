@@ -6,7 +6,8 @@ const ViewData = () => {
   const { dataId } = useParams(); // Get the dataId from the URL
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const selectedBloomsLevel = queryParams.get("level"); // Get the Bloom's level from the URL
+  const selectedPartABloomsLevel = queryParams.get("levelA"); // Get the Part A Bloom's level from the URL
+  const selectedPartBBloomsLevel = queryParams.get("levelB"); // Get the Part B Bloom's level from the URL
 
   const [structuredData, setStructuredData] = useState(null);
   const [loading, setLoading] = useState(true); // To handle loading state
@@ -65,7 +66,7 @@ const ViewData = () => {
       for (let i = 0; i < unitQuestions.length; i++) {
         if (
           partAQuestionCount[unitId] < 2 &&
-          unitQuestions[i].bloomsLevel === selectedBloomsLevel
+          unitQuestions[i].bloomsLevel === selectedPartABloomsLevel
         ) {
           partA.push(unitQuestions[i]); // Add question to Part A
           partAQuestionCount[unitId] += 1; // Increment count for this unit
@@ -86,7 +87,8 @@ const ViewData = () => {
       // Pick questions round-robin style from all units
       if (
         totalQuestionsInPartB < 10 &&
-        pickedUnits[unitId] < allUnitsQuestions.length
+        pickedUnits[unitId] < allUnitsQuestions.length &&
+        question.bloomsLevel === selectedPartBBloomsLevel
       ) {
         partB.push(question); // Add question to Part B
         pickedUnits[unitId] += 1; // Increment count for this unit in Part B
@@ -156,7 +158,7 @@ const ViewData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://question-paper-generator-cpwx.onrender.com/view/${dataId}`);
+        const response = await fetch(`http://localhost:5000/view/${dataId}`);
 
         if (response.ok) {
           const data = await response.json();

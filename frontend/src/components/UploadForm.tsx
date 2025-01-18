@@ -15,8 +15,11 @@ const bloomLevels = [
 
 export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
-  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
-  const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const [selectedPartALevel, setSelectedPartALevel] = useState<string | null>(null);
+  const [selectedPartBLevel, setSelectedPartBLevel] = useState<string | null>(null);
+  const [isPartASelectOpen, setIsPartASelectOpen] = useState(false);
+  const [isPartBSelectOpen, setIsPartBSelectOpen] = useState(false);
+
   const [loading, setLoading] = useState(false);  // Loading state
   const [showIncompletePopup, setShowIncompletePopup] = useState(false); // Popup state
   const [showFilePopup, setShowFilePopup] = useState(false); // Popup state
@@ -36,19 +39,20 @@ export default function UploadForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !selectedLevel) {
+    if (!file || !selectedPartALevel || !selectedPartBLevel) {
       setShowIncompletePopup(true); // Show popup if file or level is not selected
       return;
     }
-    console.log('Generate content with:', { file, level: selectedLevel });
+    console.log('Generate content with:', { file, levelA: selectedPartALevel, levelB: selectedPartBLevel });
     setLoading(true);  // Set loading to true
   
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('level', selectedLevel); // Include the selected Bloom's level
+    formData.append('levelA', selectedPartALevel); // Include the selected Bloom's level for PART A
+    formData.append('levelB', selectedPartBLevel); // Include the selected Bloom's level for PART B
   
     try {
-      const response = await axios.post('https://question-paper-generator-cpwx.onrender.com/upload', formData, {
+      const response = await axios.post('http://localhost:5000/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -56,7 +60,7 @@ export default function UploadForm() {
       if (response.status === 200) {
         const data = response.data;
         const dataId = data.dataId; // Assuming the response contains a dataId
-        navigate(`/view/${dataId}?level=${selectedLevel}`); // Pass the selected level as a query parameter    
+        navigate(`/view/${dataId}?levelA=${selectedPartALevel}&levelB=${selectedPartBLevel}`); // Pass the selected level as a query parameter    
         console.error('Upload failed');
       }
     } catch (error) {
@@ -101,30 +105,64 @@ export default function UploadForm() {
               </label>
             </div>
 
-            {/* Custom Select */}
+            {/* Part A Custom Select */}
             <div className="mb-8 relative">
               <div 
                 className="border rounded-xl p-4 cursor-pointer flex items-center justify-between"
-                onClick={() => setIsSelectOpen(!isSelectOpen)}
+                onClick={() => setIsPartASelectOpen(!isPartASelectOpen && !isPartBSelectOpen)}
               >
                 <div className="flex items-center gap-3">
                   <FileUp className="text-indigo-500" />
-                  <span className={selectedLevel ? 'text-gray-800' : 'text-gray-400'}>
-                    {selectedLevel ? bloomLevels.find(level => level.value === selectedLevel)?.label : 'Select Bloom\'s Level'}
+                  <span className={selectedPartALevel ? 'text-gray-800' : 'text-gray-400'}>
+                    {selectedPartALevel ? bloomLevels.find(level => level.value === selectedPartALevel)?.label : 'Select Bloom\'s Level for Part A'}
                   </span>
                 </div>
-                <ChevronDown className={`transition-transform ${isSelectOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`transition-transform ${isPartASelectOpen ? 'rotate-180' : ''}`} />
               </div>
-              {/* Dropdown */}
-              {isSelectOpen && (
+              {/* Part A Dropdown */}
+              {isPartASelectOpen && (
                 <div className="absolute w-full mt-2 bg-white border rounded-xl shadow-lg z-10">
-                  {bloomLevels.map((level) => (
+                  {bloomLevels.slice(0,2).map((level) => (
                     <div
                       key={level.value}
                       className="p-4 hover:bg-indigo-50 cursor-pointer transition-colors"
                       onClick={() => {
-                        setSelectedLevel(level.value);
-                        setIsSelectOpen(false);
+                        setSelectedPartALevel(level.value);
+                        setIsPartASelectOpen(false);
+                      }}
+                    > 
+                      <div className="font-medium text-gray-800">{level.label}</div>
+                      <div className="text-sm text-gray-500">{level.description}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+             {/* Part B Custom Select */}
+             <div className="mb-8 relative">
+              <div 
+                className="border rounded-xl p-4 cursor-pointer flex items-center justify-between"
+                onClick={() => setIsPartBSelectOpen(!isPartBSelectOpen && !isPartASelectOpen)}
+              >
+                <div className="flex items-center gap-3">
+                  <FileUp className="text-indigo-500" />
+                  <span className={selectedPartBLevel ? 'text-gray-800' : 'text-gray-400'}>
+                    {selectedPartBLevel ? bloomLevels.find(level => level.value === selectedPartBLevel)?.label : 'Select Bloom\'s Level for Part B'}
+                  </span>
+                </div>
+                <ChevronDown className={`transition-transform ${isPartBSelectOpen ? 'rotate-180' : ''}`} />
+              </div>
+              {/* Part B Dropdown */}
+              {isPartBSelectOpen && (
+                <div className="absolute w-full mt-2 bg-white border rounded-xl shadow-lg z-10">
+                  {bloomLevels.slice(2,6).map((level) => (
+                    <div
+                      key={level.value}
+                      className="p-4 hover:bg-indigo-50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setSelectedPartBLevel(level.value);
+                        setIsPartBSelectOpen(false);
                       }}
                     >
                       <div className="font-medium text-gray-800">{level.label}</div>
@@ -134,6 +172,7 @@ export default function UploadForm() {
                 </div>
               )}
             </div>
+
 
             {/* Generate Button */}
             <button
