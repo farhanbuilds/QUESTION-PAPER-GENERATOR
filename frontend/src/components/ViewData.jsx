@@ -95,25 +95,33 @@ const ViewData = () => {
         totalQuestionsInPartB++; // Increment total question count for Part B
       }
     });
-    console.log("paRT A", partA);
-    console.log("paRT b", partB);
+    console.log("PART A", partA);
+    console.log("PART B", partB);
     return { partA, partB };
   };
 
   const generatePDF = () => {
     const { partA, partB } = processParts(structuredData);
     const doc = new jsPDF();
-
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
     // Add title
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("Generated Questions", 10, 10);
+    const title = "Generated Question Paper";
+    const titleWidth = doc.getTextWidth(title);
+    doc.text(title, (pageWidth - titleWidth) / 2, 10);
 
     // Add Part A
     doc.setFontSize(14);
     doc.text("Part A:", 10, 20);
+
+    doc.setFontSize(12);
+    const textWidthPartA = doc.getTextWidth("10 x 1 = 10");
+    doc.text("10 x 1 = 10", pageWidth - textWidthPartA - 10, 30);
+
     doc.setFont("Helvetica", "normal");
-    let y = 30;
+    let y = 40;
     partA.forEach((q, index) => {
       doc.text(`${index + 1}. ${q.question}`, 10, y);
       y += 14;
@@ -126,7 +134,11 @@ const ViewData = () => {
     // Add Part B
     doc.setFontSize(14);
     doc.text("Part B:", 10, y + 10);
-    y += 20;
+
+    const textWidthPartB = doc.getTextWidth("5 x 10 = 50");
+    doc.text("5 x 10 = 50", pageWidth - textWidthPartB - 10, y + 20);
+
+    y += 40;
     partB.forEach((q, index) => {
       if (index % 2 === 0) {
         doc.text(`${Math.floor(index / 2) + 1}. ${q.question}`, 10, y);
@@ -158,7 +170,7 @@ const ViewData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/view/${dataId}`);
+        const response = await fetch(`https://question-paper-generator-cpwx.onrender.com/view/${dataId}`);
 
         if (response.ok) {
           const data = await response.json();
