@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { jsPDF } from "jspdf";
+import imageSrc from "./assets/images/1000015463-removebg-preview.png";
 
 const ViewData = () => {
   const { dataId } = useParams(); // Get the dataId from the URL
@@ -103,14 +104,17 @@ const ViewData = () => {
   const generatePDF = () => {
     const { partA, partB } = processParts(structuredData);
     const doc = new jsPDF();
-    const imgData = "";
+    
     const pageWidth = doc.internal.pageSize.getWidth();
     // Add title
     doc.setFont("Times", "bold");
     doc.setFontSize(18);
+    const img = new Image();
+    img.src = imageSrc;
 
-    doc.addImage(imgData, "JPEG", 10, 15, 25, 25);
-
+    img.onload = () => {
+    doc.addImage(img, "PNG", 10, 10, 25, 25);
+    }
     const title1 = "CMR COLLEGE OF ENGINEERING & TECHNOLOGY";
     const title1Width = doc.getTextWidth(title1);
     doc.text(title1, (pageWidth - title1Width) / 2, 15);
@@ -125,27 +129,27 @@ const ViewData = () => {
     const textWidthClass = doc.getTextWidth("Class: .............");
     doc.text("Class: .............", pageWidth - textWidthClass - 10, 45);
 
-    doc.text("RollNo: ............", 10, 55);
+    doc.text("RollNo: ............", 10, 60);
 
     const textWidthMarks = doc.getTextWidth("Max.Marks: 60");
-    doc.text("Class: .............", pageWidth - textWidthMarks - 10, 55);
+    doc.text("Class: .............", pageWidth - textWidthMarks - 10, 60);
 
     const startX = 10;
     const endX = pageWidth - 10;
-    const lineY = 60;
+    const lineY = 75;
 
     doc.line(startX, lineY, endX, lineY);
 
     // Add Part A
     doc.setFontSize(14);
-    doc.text("Part A:", 10, 80);
+    doc.text("Part A:", 10, 95);
 
     doc.setFontSize(12);
     const textWidthPartA = doc.getTextWidth("10 x 1 = 10");
-    doc.text("10 x 1 = 10", pageWidth - textWidthPartA - 10, 90);
+    doc.text("10 x 1 = 10", pageWidth - textWidthPartA - 10, 100);
 
     doc.setFont("Helvetica", "normal");
-    let y = 100;
+    let y = 110;
     partA.forEach((q, index) => {
       doc.text(`${index + 1}. ${q.question}`, 10, y);
       y += 14;
