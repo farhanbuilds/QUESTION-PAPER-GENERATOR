@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { jsPDF } from "jspdf";
 
@@ -15,100 +15,75 @@ const ViewData = () => {
   const logoFormat = queryParams.get("logoFormat");
 
   const [structuredData, setStructuredData] = useState(null);
+  const[partA, setPartA] = useState([]);
+  const[partB, setPartB] = useState([]);
+
   const [loading, setLoading] = useState(true); // To handle loading state
   const [error, setError] = useState(null); // To handle any errors
 
   // Function to process the data into Part A and Part B
-  const processParts = (data) => {
+  const processParts = useCallback((data) => {
+    const shuffleArray = (array) => {
+      return array
+        .map((item) => ({ item, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ item }) => item);
+    };
+
     const partA = [];
     const partB = [];
-    const partAQuestionCount = {}; // To track the number of questions taken per unit for Part A
+    const partAQuestionCount = {};
     let totalQuestionsInPartB = 0;
 
-    let unitData = {};
-    data.forEach((entry) => {
-      if (!unitData[entry.unit]) {
-        unitData[entry.unit] = 0;
-      }
+    const shuffledData = shuffleArray(data);
 
-      unitData[entry.unit]++;
-    });
-
-    let totalUnits = Object.keys(unitData).length;
-    console.log("Total units 2 : ", totalUnits);
-    console.log("question per unit : ", unitData);
-
-    let selectedQuestions = [];
-    let unitQuestionsMap = {};
-
-    data.forEach((item) => {
-      if (!unitQuestionsMap[item.unit]) {
-        unitQuestionsMap[item.unit] = new Set();
-      }
-
-      if (unitQuestionsMap[item.unit].size < 2) {
-        unitQuestionsMap[item.unit].add(item.questions);
-      }
-    });
-
-    for (let unit in unitQuestionsMap) {
-      Array.from(unitQuestionsMap[unit]).forEach((questions) => {
-        selectedQuestions.push({ unit: unit, question: questions });
-      });
-    }
-
-    console.log("selected ", selectedQuestions);
-    selectedQuestions.forEach((item) => {
-      console.log(item.question);
-    });
-
-    // Part A: 2 questions per unit, filtered by Bloom's level
-    data.forEach((unit) => {
-      const unitId = unit.unit; // Identify the unit
-      const unitQuestions = unit.questions || []; // Ensure unit has questions
-      partAQuestionCount[unitId] = 0; // Initialize count for this unit
+    shuffledData.forEach((unit) => {
+      const unitId = unit.unit;
+      const unitQuestions = unit.questions || [];
+      partAQuestionCount[unitId] = 0;
 
       for (let i = 0; i < unitQuestions.length; i++) {
         if (
           partAQuestionCount[unitId] < 2 &&
           unitQuestions[i].bloomsLevel === selectedPartABloomsLevel
         ) {
-          partA.push(unitQuestions[i]); // Add question to Part A
-          partAQuestionCount[unitId] += 1; // Increment count for this unit
-        } else {
-          break; // Stop once 2 questions have been added
+          partA.push(unitQuestions[i]);
+          partAQuestionCount[unitId] += 1;
         }
       }
     });
 
-    // Part B: 10 questions in total
-    const allUnitsQuestions = data.flatMap((unit) => unit.questions || []); // Combine all questions from all units
-    const pickedUnits = {}; // To track questions picked per unit in Part B
+    const allUnitsQuestions = data.flatMap((unit) => unit.questions || []);
+    const pickedUnits = {};
 
     allUnitsQuestions.forEach((question) => {
-      const unitId = question.unit || "unknown"; // Ensure unitId exists
-      if (!pickedUnits[unitId]) pickedUnits[unitId] = 0; // Initialize if not exists
+      const unitId = question.unit || "unknown";
+      if (!pickedUnits[unitId]) pickedUnits[unitId] = 0;
 
-      // Pick questions round-robin style from all units
       if (
         totalQuestionsInPartB < 10 &&
         pickedUnits[unitId] < allUnitsQuestions.length &&
         question.bloomsLevel === selectedPartBBloomsLevel
       ) {
-        partB.push(question); // Add question to Part B
-        pickedUnits[unitId] += 1; // Increment count for this unit in Part B
-        totalQuestionsInPartB++; // Increment total question count for Part B
+        partB.push(question);
+        pickedUnits[unitId] += 1;
+        totalQuestionsInPartB++;
       }
     });
-    console.log("PART A", partA);
-    console.log("PART B", partB);
+
+    console.log("partA", partA);
+    console.log("partB", partB);
+
     return { partA, partB };
-  };
+  }, [selectedPartABloomsLevel, selectedPartBBloomsLevel]);
+  
 
   const generatePDF = () => {
-    const { partA, partB } = processParts(structuredData);
+    if (!partA.length || !partB.length) {
+      alert("Questions not loaded properly!");
+      return;
+    }  
     const doc = new jsPDF();
-    
     
     const pageWidth = doc.internal.pageSize.getWidth();
     // Add title
@@ -219,23 +194,24 @@ const ViewData = () => {
     const fetchData = async () => {
       try {
         const response = await fetch(`https://question-paper-generator-cpwx.onrender.com/view/${dataId}`);
-
         if (response.ok) {
           const data = await response.json();
-          console.log("Fetched Data:", data);
-          setStructuredData(data.structuredData); // Set the fetched data
+          setStructuredData(data.structuredData);
+          const { partA, partB } = processParts(data.structuredData);
+          setPartA(partA);
+          setPartB(partB);
         } else {
           setError("Data not found or server error");
         }
       } catch (err) {
         setError("Error fetching data");
       } finally {
-        setLoading(false); // Set loading to false after data is fetched or error occurred
+        setLoading(false);
       }
     };
-
     fetchData();
-  }, [dataId]);
+  }, [dataId, processParts]);
+  
 
   if (loading) {
     return <div>Loading...</div>;
@@ -246,7 +222,6 @@ const ViewData = () => {
   }
 
   // Process the structured data into Part A and Part B
-  const { partA, partB } = processParts(structuredData);
 
   return (
     <div className="container mx-auto p-4">
@@ -267,7 +242,7 @@ const ViewData = () => {
         <ul className="list-decimal font-normal ml-6">
           {partA.map((q, index) => (
             <li key={index}>
-              <p>{q.question}({q.bloomsLevel})</p>
+              <p>{q.question} ({q.bloomsLevel})</p>
               <br />
               <br />
             </li>
@@ -286,8 +261,7 @@ const ViewData = () => {
                   <ul>
                     <li>
                       <p>
-                        {Math.floor(index / 2) + 1}. a) {q.question}(
-                        {q.bloomsLevel})
+                        {Math.floor(index / 2) + 1}. a) {q.question} ({q.bloomsLevel})
                       </p>
                     </li>
                   </ul>
@@ -298,7 +272,7 @@ const ViewData = () => {
                 <>
                   <li className="list-none ml-5">
                     <p>
-                      b) {q.question}({q.bloomsLevel})
+                      b) {q.question} ({q.bloomsLevel})
                     </p>
                   </li>
                   <br />

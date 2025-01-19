@@ -128,7 +128,6 @@ export default function UploadForm() {
         const data = response.data;
         const dataId = data.dataId; // Assuming the response contains a dataId
         navigate(`/view/${dataId}?levelA=${encodeURIComponent(selectedPartALevel)}&levelB=${encodeURIComponent(selectedPartBLevel)}&collegeName=${encodeURIComponent(collegeDetails.name)}&affiliatedUniversity=${encodeURIComponent(collegeDetails.university)}&program=${encodeURIComponent(collegeDetails.program)}&logoBase64=${encodeURIComponent(logoBase64)}&logoFormat=${logoFormat}`); // Pass the selected level and college details as query parameters    
-        console.error('Upload failed');
       }
     } catch (error) {
       console.error('Error uploading file:', error);
