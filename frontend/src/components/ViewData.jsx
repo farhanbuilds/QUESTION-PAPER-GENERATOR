@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { jsPDF } from "jspdf";
-import imageSrc from "./assets/images/1000015463-removebg-preview.png";
+import cmrLogo from "../assets/images/cmrLogo.jpg"; 
 
 const ViewData = () => {
   const { dataId } = useParams(); // Get the dataId from the URL
@@ -101,55 +101,80 @@ const ViewData = () => {
     return { partA, partB };
   };
 
+  const [Base64Image, setBase64Image] = useState("");
+
+    useEffect(() => {
+      fetch(cmrLogo)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const render = new FileReader();
+        render.readAsDataURL(blob)
+        render.onloadend = () => {
+          setBase64Image(render.result);
+        };
+      })
+      .catch((error) => {
+        console.error("Error converting image to Base64:", error);
+      });
+    },[]);
+
   const generatePDF = () => {
     const { partA, partB } = processParts(structuredData);
     const doc = new jsPDF();
     
+    
     const pageWidth = doc.internal.pageSize.getWidth();
     // Add title
     doc.setFont("Times", "bold");
-    doc.setFontSize(18);
-    const img = new Image();
-    img.src = imageSrc;
+    doc.setFontSize(16);
 
-    img.onload = () => {
-    doc.addImage(img, "PNG", 10, 10, 25, 25);
-    }
+    doc.addImage(Base64Image, "JPG", 10, 5, 15, 15);
+
     const title1 = "CMR COLLEGE OF ENGINEERING & TECHNOLOGY";
     const title1Width = doc.getTextWidth(title1);
     doc.text(title1, (pageWidth - title1Width) / 2, 15);
 
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     const title2 = "(UGC AUTONOOMUS)";
     const title2Width = doc.getTextWidth(title2);
     doc.text(title2, (pageWidth - title2Width) / 2, 25);
+    
+    const examType = "B.Tech Semester I - Regular Examinations January-2025";
+    const examTypeTextWidth = doc.getTextWidth(examType);
+    doc.text(examType, (pageWidth - examTypeTextWidth) / 2 , 35)
 
-    doc.text("Name: ..............", 10, 45);
+    doc.setFontSize(12);
+    doc.text("Name: _________________________________", 10, 45);
 
-    const textWidthClass = doc.getTextWidth("Class: .............");
-    doc.text("Class: .............", pageWidth - textWidthClass - 10, 45);
+    const textWidthClass = doc.getTextWidth("Class: _______________");
+    doc.text("Class: _______________", pageWidth - textWidthClass - 10, 45);
 
-    doc.text("RollNo: ............", 10, 60);
+    doc.text("RollNo: ____________", 10, 60);
 
     const textWidthMarks = doc.getTextWidth("Max.Marks: 60");
-    doc.text("Class: .............", pageWidth - textWidthMarks - 10, 60);
+    doc.text("Max.Marks: 60", pageWidth - textWidthMarks - 10, 60);
 
     const startX = 10;
     const endX = pageWidth - 10;
-    const lineY = 75;
+    const lineY = 65;
 
     doc.line(startX, lineY, endX, lineY);
 
     // Add Part A
     doc.setFontSize(14);
-    doc.text("Part A:", 10, 95);
+    const partATextWidth = doc.getTextWidth("Part A:");
+    doc.text("Part A:", (pageWidth - partATextWidth) / 2, 90);
+    const partARules = "Answer all TEN questions."
+    const partARulesTextWidth = doc.getTextWidth(partARules);
+    doc.text(partARules, (pageWidth - partARulesTextWidth) / 2, 100);
+
 
     doc.setFontSize(12);
     const textWidthPartA = doc.getTextWidth("10 x 1 = 10");
-    doc.text("10 x 1 = 10", pageWidth - textWidthPartA - 10, 100);
+    doc.text("10 x 1 = 10", pageWidth - textWidthPartA - 10, 110);
 
     doc.setFont("Helvetica", "normal");
-    let y = 110;
+    let y = 120;
     partA.forEach((q, index) => {
       doc.text(`${index + 1}. ${q.question}`, 10, y);
       y += 14;
@@ -159,31 +184,41 @@ const ViewData = () => {
       }
     });
 
-    // Add Part B
+    doc.addPage();
+    y = 0;
+    // Add Part 
+    doc.setFont("Times", "bold");
     doc.setFontSize(14);
-    doc.text("Part B:", 10, y + 10);
+    const partBHeadingTextWidth = doc.getTextWidth("Part B:");
+    doc.text("Part B:", (pageWidth - partBHeadingTextWidth) / 2, y + 20);
 
+    const partBRules = "Answer FIVE questions, choosing one from each set.";
+    const partBRulesTextWidth = doc.getTextWidth("Answer FIVE questions, choosing one from each set.");
+    doc.text(partBRules, (pageWidth - partBRulesTextWidth) / 2, y + 30);
+
+    doc.setFontSize(12);
     const textWidthPartB = doc.getTextWidth("5 x 10 = 50");
-    doc.text("5 x 10 = 50", pageWidth - textWidthPartB - 10, y + 20);
+    doc.text("5 x 10 = 50", pageWidth - textWidthPartB - 10, y + 40);
 
-    y += 40;
+    doc.setFont("Helvetica", "normal");
+    y += 50;
     partB.forEach((q, index) => {
       if (index % 2 === 0) {
-        doc.text(`${Math.floor(index / 2) + 1}. ${q.question}`, 10, y);
-        y += 14;
+        doc.text(`${Math.floor(index / 2) + 1}. a) ${q.question}`, 10, y);
+        y += 10;
         if (y > 280) {
           doc.addPage();
           y = 10;
         }
         doc.text("(OR)", 45, y);
-        y += 14;
+        y += 10;
         if (y > 280) {
           doc.addPage();
           y = 10;
         }
       } else {
-        doc.text(`${q.question}`, 15, y);
-        y += 14;
+        doc.text(`b) ${q.question}`, 15, y);
+        y += 10;
         if (y > 280) {
           doc.addPage();
           y = 10;
@@ -266,7 +301,7 @@ const ViewData = () => {
                   <ul>
                     <li>
                       <p>
-                        {Math.floor(index / 2) + 1}. {q.question}(
+                        {Math.floor(index / 2) + 1}. a) {q.question}(
                         {q.bloomsLevel})
                       </p>
                     </li>
@@ -278,7 +313,7 @@ const ViewData = () => {
                 <>
                   <li className="list-none ml-5">
                     <p>
-                      {q.question}({q.bloomsLevel})
+                      b) {q.question}({q.bloomsLevel})
                     </p>
                   </li>
                   <br />
