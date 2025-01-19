@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Upload, ChevronDown, FileUp, Sparkles } from 'lucide-react';
+import {Building2, School, GraduationCap, Upload, ChevronDown, FileUp, Sparkles } from 'lucide-react';
 import Footer from './Footer.jsx';
 
 const bloomLevels = [
@@ -17,6 +17,14 @@ export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [selectedPartALevel, setSelectedPartALevel] = useState<string | null>(null);
   const [selectedPartBLevel, setSelectedPartBLevel] = useState<string | null>(null);
+  const [collegeDetails, setCollegeDetails] = useState({
+    name: '',
+    university: '',
+    program: ''
+  });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoFormat, setLogoFormat] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>('');
   const [isPartASelectOpen, setIsPartASelectOpen] = useState(false);
   const [isPartBSelectOpen, setIsPartBSelectOpen] = useState(false);
 
@@ -37,22 +45,81 @@ export default function UploadForm() {
     }
   };
 
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setLogoFile(file);
+      const fileType = file.type.split("/")[1].toUpperCase();
+      setLogoFormat(fileType);
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCollegeDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setCollegeDetails(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !selectedPartALevel || !selectedPartBLevel) {
       setShowIncompletePopup(true); // Show popup if file or level is not selected
       return;
     }
+
+    console.log('Generating with:', { 
+      file,
+      levelA: selectedPartALevel,
+      levelB: selectedPartBLevel,
+      collegeDetails,
+      logo: logoFile
+    });
     console.log('Generate content with:', { file, levelA: selectedPartALevel, levelB: selectedPartBLevel });
     setLoading(true);  // Set loading to true
+
+    let logoBase64 = '';
+
+    try {
+
+      if(logoFile){
+        logoBase64 = await convertFileToBase64(logoFile);
+      }
+    }
+    catch (error) {
+      console.error('Error converting logo to base64:', error);
+    }
+    
   
     const formData = new FormData();
     formData.append('file', file);
     formData.append('levelA', selectedPartALevel); // Include the selected Bloom's level for PART A
     formData.append('levelB', selectedPartBLevel); // Include the selected Bloom's level for PART B
-  
+    formData.append('logo', logoBase64 || '');
+    formData.append('logoFormat', logoFormat || '');
+    formData.append('collegeName', collegeDetails.name);
+    formData.append('affilatedUniversity', collegeDetails.university);
+    formData.append('program', collegeDetails.program);
+    
+
     try {
-      const response = await axios.post('http://localhost:5000/upload', formData, {
+      const response = await axios.post('https://question-paper-generator-cpwx.onrender.com/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -60,7 +127,7 @@ export default function UploadForm() {
       if (response.status === 200) {
         const data = response.data;
         const dataId = data.dataId; // Assuming the response contains a dataId
-        navigate(`/view/${dataId}?levelA=${selectedPartALevel}&levelB=${selectedPartBLevel}`); // Pass the selected level as a query parameter    
+        navigate(`/view/${dataId}?levelA=${encodeURIComponent(selectedPartALevel)}&levelB=${encodeURIComponent(selectedPartBLevel)}&collegeName=${encodeURIComponent(collegeDetails.name)}&affiliatedUniversity=${encodeURIComponent(collegeDetails.university)}&program=${encodeURIComponent(collegeDetails.program)}&logoBase64=${encodeURIComponent(logoBase64)}&logoFormat=${logoFormat}`); // Pass the selected level and college details as query parameters    
         console.error('Upload failed');
       }
     } catch (error) {
@@ -81,6 +148,99 @@ export default function UploadForm() {
           <p className="text-lg text-gray-600 font-medium mb-8 text-center">Upload your Question Bank PDF or DOCX and select Bloom's level to generate question paper</p>
           {/* Form */}
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="mb-8 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {/* College Logo Upload */}
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">College Logo</label>
+                  <div className="relative">
+                    <label 
+                      htmlFor="logo-upload"
+                      className="flex h-[46px] w-full rounded-lg border border-gray-300 hover:border-indigo-400 cursor-pointer transition-colors overflow-hidden group"
+                    >
+                      <div className="flex items-center w-full">
+                        <div className="flex-shrink-0 bg-gray-50 px-3 py-2 border-r border-gray-300 group-hover:border-indigo-400">
+                          {logoPreview ? (
+                            <img 
+                              src={logoPreview} 
+                              alt="Preview" 
+                              className="w-6 h-6 object-contain"
+                            />
+                          ) : (
+                            <Building2 className="h-5 w-5 text-gray-400" />
+                          )}
+                        </div>
+                        <div className="flex-1 px-3 py-2 text-sm text-gray-500 truncate">
+                          {logoFile ? logoFile.name : 'Choose logo...'}
+                        </div>
+                      </div>
+                      <input
+                        id="logo-upload"
+                        name="logo"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* College Name */}
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">College Name</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <School className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      name="name"
+                      value={collegeDetails.name}
+                      onChange={handleCollegeDetailsChange}
+                      placeholder="Enter college name"
+                      className="pl-10 w-full rounded-lg border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                {/* University */}
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Affiliated University</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <GraduationCap className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      name="university"
+                      value={collegeDetails.university}
+                      onChange={handleCollegeDetailsChange}
+                      placeholder="Enter affiliated university"
+                      className="pl-10 w-full rounded-lg border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Program */}
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Program</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FileUp className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      name="program"
+                      value={collegeDetails.program}
+                      onChange={handleCollegeDetailsChange}
+                      placeholder="Enter program name"
+                      className="pl-10 w-full rounded-lg border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
             {/* File Upload */}
             <div className="mb-8">
               <label 

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { jsPDF } from "jspdf";
-import cmrLogo from "../assets/images/cmrLogo.jpg"; 
 
 const ViewData = () => {
   const { dataId } = useParams(); // Get the dataId from the URL
@@ -9,6 +8,11 @@ const ViewData = () => {
   const queryParams = new URLSearchParams(location.search);
   const selectedPartABloomsLevel = queryParams.get("levelA"); // Get the Part A Bloom's level from the URL
   const selectedPartBBloomsLevel = queryParams.get("levelB"); // Get the Part B Bloom's level from the URL
+  const collegeName = queryParams.get("collegeName");
+  const affilatedUniversity = queryParams.get("affiliatedUniversity");
+  const programName = queryParams.get("program");
+  const collegeLogo = queryParams.get("logoBase64");
+  const logoFormat = queryParams.get("logoFormat");
 
   const [structuredData, setStructuredData] = useState(null);
   const [loading, setLoading] = useState(true); // To handle loading state
@@ -101,23 +105,6 @@ const ViewData = () => {
     return { partA, partB };
   };
 
-  const [Base64Image, setBase64Image] = useState("");
-
-    useEffect(() => {
-      fetch(cmrLogo)
-      .then((response) => response.blob())
-      .then((blob) => {
-        const render = new FileReader();
-        render.readAsDataURL(blob)
-        render.onloadend = () => {
-          setBase64Image(render.result);
-        };
-      })
-      .catch((error) => {
-        console.error("Error converting image to Base64:", error);
-      });
-    },[]);
-
   const generatePDF = () => {
     const { partA, partB } = processParts(structuredData);
     const doc = new jsPDF();
@@ -126,22 +113,20 @@ const ViewData = () => {
     const pageWidth = doc.internal.pageSize.getWidth();
     // Add title
     doc.setFont("Times", "bold");
-    doc.setFontSize(16);
+    doc.setFontSize(14);
 
-    doc.addImage(Base64Image, "JPG", 10, 5, 15, 15);
+    doc.addImage(collegeLogo, logoFormat, 10, 5, 15, 15);
 
-    const title1 = "CMR COLLEGE OF ENGINEERING & TECHNOLOGY";
-    const title1Width = doc.getTextWidth(title1);
-    doc.text(title1, (pageWidth - title1Width) / 2, 15);
+    const title1Width = doc.getTextWidth(collegeName);
+    doc.text(collegeName, (pageWidth - title1Width) / 2, 15);
 
-    doc.setFontSize(12);
-    const title2 = "(UGC AUTONOOMUS)";
-    const title2Width = doc.getTextWidth(title2);
-    doc.text(title2, (pageWidth - title2Width) / 2, 25);
+    doc.setFontSize(10);
+  
+    const title2Width = doc.getTextWidth(affilatedUniversity);
+    doc.text(affilatedUniversity, (pageWidth - title2Width) / 2, 25);
     
-    const examType = "B.Tech Semester I - Regular Examinations January-2025";
-    const examTypeTextWidth = doc.getTextWidth(examType);
-    doc.text(examType, (pageWidth - examTypeTextWidth) / 2 , 35)
+    const examTypeTextWidth = doc.getTextWidth(programName);
+    doc.text(programName, (pageWidth - examTypeTextWidth) / 2 , 35)
 
     doc.setFontSize(12);
     doc.text("Name: _________________________________", 10, 45);
@@ -233,7 +218,7 @@ const ViewData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/view/${dataId}`);
+        const response = await fetch(`https://question-paper-generator-cpwx.onrender.com/view/${dataId}`);
 
         if (response.ok) {
           const data = await response.json();
