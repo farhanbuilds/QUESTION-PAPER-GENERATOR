@@ -40,7 +40,7 @@ export default function App() {
               <h1 className="text-5xl font-bold text-gray-900 mb-6 select-none">
                 Smart Question Paper Generator
               </h1>
-              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto select-none">
+              <p className="hidden md:block text-xl text-gray-600 mb-8 max-w-2xl mx-auto select-none">
                 Create professional question papers with automatic Bloom's Taxonomy classification and customized formatting for your educational institution.
               </p>
               <a href="/upload">

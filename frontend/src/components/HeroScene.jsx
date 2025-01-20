@@ -1,17 +1,23 @@
 import React from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, Float } from '@react-three/drei';
 
 function Brain() {
+  const { size } = useThree(); // Get the screen size
+  const isSmallScreen = size.width < 768; // Adjust based on the breakpoint (e.g., 768px for mobile)
+
+  // Adjust the geometry size for smaller screens
+  const geometryArgs = isSmallScreen ? [1, 0.2, 64, 16] : [2, 0.4, 128, 32];
+
   return (
     <Float
-      speed={1.4}
+      speed={2.4}
       rotationIntensity={1}
       floatIntensity={2}
       floatingRange={[0, 0.5]}
     >
       <mesh>
-        <torusKnotGeometry args={[2, 0.4, 128, 32]} />
+        <torusKnotGeometry args={geometryArgs} />
         <meshNormalMaterial />
       </mesh>
     </Float>
