@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { jsPDF } from "jspdf";
+import { Header  } from "./Header.tsx";
 
 const ViewData = () => {
   const { dataId } = useParams(); // Get the dataId from the URL
@@ -224,6 +225,8 @@ const ViewData = () => {
   // Process the structured data into Part A and Part B
 
   return (
+    <>
+    < Header />
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Extracted Data</h1>
 
@@ -283,6 +286,7 @@ const ViewData = () => {
         </ul>
       </div>
     </div>
+    </>
   );
 };
 
