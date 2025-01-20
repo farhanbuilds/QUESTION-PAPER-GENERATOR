@@ -27,7 +27,7 @@ function Brain() {
 export function HeroScene() {
   return (
     <div className="absolute inset-0 h-screen pointer-events-none mt-20">
-      <div className="relative w-full h-full">
+      <div className="relative w-full h-full max-md:h-5/6">
         <Canvas
           camera={{ position: [0, 0, 8], fov: 50 }}
           className="!pointer-events-auto"
