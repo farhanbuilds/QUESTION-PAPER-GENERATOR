@@ -36,7 +36,7 @@ export default function App() {
         <div className="relative overflow-hidden pt-16">
           <HeroScene />
           <div className="max-w-7xl h-screen mx-auto px-4 sm:px-6 lg:px-8 py-24">
-            <div className="text-center absolute left-8 bottom-28 max-md:bottom-3/4 z-10 flex flex-col items-center">
+            <div className="text-center absolute left-8 bottom-28 max-md:bottom-1/4 z-10 flex flex-col items-center">
               <h1 className="hidden md:block text-5xl font-bold text-gray-900 mb-6 select-none">
                 Smart Question Paper Generator
               </h1>
