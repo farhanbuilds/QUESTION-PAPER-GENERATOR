@@ -37,10 +37,10 @@ export default function App() {
           <HeroScene />
           <div className="max-w-7xl h-screen mx-auto px-4 sm:px-6 lg:px-8 py-24">
             <div className="text-center absolute left-8 bottom-24 z-10 flex flex-col items-center">
-              <h1 className="text-5xl font-bold text-gray-900 mb-6 select-none">
+              <h1 className="text-5xl max-md:text-2xl font-bold text-gray-900 mb-6 select-none">
                 Smart Question Paper Generator
               </h1>
-              <p className="hidden md:block text-xl text-gray-600 mb-8 max-w-2xl mx-auto select-none">
+              <p className="max-md:text-md text-xl text-gray-600 mb-8 max-w-2xl mx-auto select-none">
                 Create professional question papers with automatic Bloom's Taxonomy classification and customized formatting for your educational institution.
               </p>
               <a href="/upload">

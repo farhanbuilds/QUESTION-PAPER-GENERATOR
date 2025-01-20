@@ -8,7 +8,7 @@ export function HomeFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1">
-            <h3 className="text-2xl font-bold text-indigo-600">QuestionGen</h3>
+            <h3 className="text-2xl font-bold text-indigo-600">UrealHeroes</h3>
             <p className="mt-4 text-gray-500">
               Revolutionizing question paper generation with AI and Bloom's Taxonomy
             </p>
@@ -67,7 +67,7 @@ export function HomeFooter() {
 
         <div className="mt-8 border-t border-gray-200 pt-8">
           <p className="text-base text-gray-400 text-center">
-            © {new Date().getFullYear()} QuestionGen. All rights reserved.
+            © {new Date().getFullYear()} UrealHeroes. All rights reserved.
           </p>
         </div>
       </div>
