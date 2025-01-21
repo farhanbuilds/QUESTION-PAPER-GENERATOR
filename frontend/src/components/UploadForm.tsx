@@ -109,9 +109,9 @@ export default function UploadForm() {
   
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('levelA', selectedPartALevel); // Include the selected Bloom's level for PART A
-    formData.append('levelB', selectedPartBLevel); // Include the selected Bloom's level for PART B
-    formData.append('logo', logoBase64 || '');
+    formData.append('selectedPartALevel', selectedPartALevel); // Include the selected Bloom's level for PART A
+    formData.append('selectedPartBLevel', selectedPartBLevel); // Include the selected Bloom's level for PART B
+    formData.append('logoBase64', logoBase64 || '');
     formData.append('logoFormat', logoFormat || '');
     formData.append('collegeName', collegeDetails.name);
     formData.append('affilatedUniversity', collegeDetails.university);
@@ -119,7 +119,7 @@ export default function UploadForm() {
     
 
     try {
-      const response = await axios.post('https://question-paper-generator-cpwx.onrender.com/upload', formData, {
+      const response = await axios.post('http://localhost:5000/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -127,7 +127,7 @@ export default function UploadForm() {
       if (response.status === 200) {
         const data = response.data;
         const dataId = data.dataId; // Assuming the response contains a dataId
-        navigate(`/view/${dataId}?levelA=${encodeURIComponent(selectedPartALevel)}&levelB=${encodeURIComponent(selectedPartBLevel)}&collegeName=${encodeURIComponent(collegeDetails.name)}&affiliatedUniversity=${encodeURIComponent(collegeDetails.university)}&program=${encodeURIComponent(collegeDetails.program)}&logoBase64=${encodeURIComponent(logoBase64)}&logoFormat=${logoFormat}`); // Pass the selected level and college details as query parameters    
+        navigate(`/view/${dataId}`); // Pass the selected level and college details as query parameters    
       }
     } catch (error) {
       console.error('Error uploading file:', error);

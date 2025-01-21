@@ -127,6 +127,26 @@ const parseTextToStructuredData = (extractedData) => {
 app.post('/upload', upload.single('file'), async (req, res) => {
   const file = req.file;
   console.log('Uploaded file:', file);
+  const { 
+    selectedPartALevel,
+    selectedPartBLevel,
+    logoBase64,
+    logoFormat,
+    collegeName,
+    affilatedUniversity,
+    program,
+   } = req.body;
+
+   console.log("Recieved Data :");
+   console.log({
+    selectedPartALevel,
+    selectedPartBLevel,
+    logoBase64,
+    logoFormat,
+    collegeName,
+    affilatedUniversity,
+    program,
+   });
 
   if (!file) {
     return res.status(400).json({ error: 'No file uploaded' });
@@ -149,7 +169,19 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const structuredData = parseTextToStructuredData(extractedData);
 
     const dataId = Date.now();
-    fs.writeFileSync(path.join(dataDir, `${dataId}.json`), JSON.stringify(structuredData));
+    
+    const metadata = {
+      selectedPartALevel,
+      selectedPartBLevel,
+      logoBase64,
+      logoFormat,
+      collegeName,
+      affilatedUniversity,
+      program,
+      structuredData,
+    };
+
+    fs.writeFileSync(path.join(dataDir, `${dataId}.json`), JSON.stringify(metadata));
 
     res.json({ dataId });
   } catch (error) {
@@ -158,7 +190,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 });
 
 // Route to serve structured data
-app.get('/view/:dataId', (req, res) => {
+app.get('/api/view/:dataId', (req, res) => {
   const dataId = req.params.dataId;
   const dataFilePath = path.join(dataDir, `${dataId}.json`);
 

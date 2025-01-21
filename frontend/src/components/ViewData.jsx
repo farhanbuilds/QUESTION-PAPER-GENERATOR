@@ -5,17 +5,16 @@ import { Header  } from "./Header.tsx";
 
 const ViewData = () => {
   const { dataId } = useParams(); // Get the dataId from the URL
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const selectedPartABloomsLevel = queryParams.get("levelA"); // Get the Part A Bloom's level from the URL
-  const selectedPartBBloomsLevel = queryParams.get("levelB"); // Get the Part B Bloom's level from the URL
-  const collegeName = queryParams.get("collegeName");
-  const affilatedUniversity = queryParams.get("affiliatedUniversity");
-  const programName = queryParams.get("program");
-  const collegeLogo = queryParams.get("logoBase64");
-  const logoFormat = queryParams.get("logoFormat");
+  // const location = useLocation();
+  // const queryParams = new URLSearchParams(location.search);
+  const[partABloomsLevel, setPartABloomsLevel] = useState('');
+  const[partBBloomsLevel, setPartBBloomsLevel] = useState('');
+  const[collegeName, setCollegeName] = useState('');
+  const[affilatedUniversity, setAffilatedUniversity] = useState('');
+  const[program, setProgram] = useState('');
+  const[logoBase64, setLogobase64] = useState('');
+  const[logoFormat, setLogoFormat] = useState('');
 
-  const [structuredData, setStructuredData] = useState(null);
   const[partA, setPartA] = useState([]);
   const[partB, setPartB] = useState([]);
 
@@ -46,7 +45,7 @@ const ViewData = () => {
       for (let i = 0; i < unitQuestions.length; i++) {
         if (
           partAQuestionCount[unitId] < 2 &&
-          unitQuestions[i].bloomsLevel === selectedPartABloomsLevel
+          unitQuestions[i].bloomsLevel === partABloomsLevel
         ) {
           partA.push(unitQuestions[i]);
           partAQuestionCount[unitId] += 1;
@@ -64,7 +63,7 @@ const ViewData = () => {
       if (
         totalQuestionsInPartB < 10 &&
         pickedUnits[unitId] < allUnitsQuestions.length &&
-        question.bloomsLevel === selectedPartBBloomsLevel
+        question.bloomsLevel === partBBloomsLevel
       ) {
         partB.push(question);
         pickedUnits[unitId] += 1;
@@ -76,7 +75,7 @@ const ViewData = () => {
     console.log("partB", partB);
 
     return { partA, partB };
-  }, [selectedPartABloomsLevel, selectedPartBBloomsLevel]);
+  }, [partABloomsLevel, partBBloomsLevel]);
   
 
   const generatePDF = () => {
@@ -91,7 +90,7 @@ const ViewData = () => {
     doc.setFont("Times", "bold");
     doc.setFontSize(14);
 
-    doc.addImage(collegeLogo, logoFormat, 10, 5, 15, 15);
+    doc.addImage(logoBase64, logoFormat, 10, 5, 15, 15);
 
     const title1Width = doc.getTextWidth(collegeName);
     doc.text(collegeName, (pageWidth - title1Width) / 2, 15);
@@ -101,8 +100,8 @@ const ViewData = () => {
     const title2Width = doc.getTextWidth(affilatedUniversity);
     doc.text(affilatedUniversity, (pageWidth - title2Width) / 2, 25);
     
-    const examTypeTextWidth = doc.getTextWidth(programName);
-    doc.text(programName, (pageWidth - examTypeTextWidth) / 2 , 35)
+    const examTypeTextWidth = doc.getTextWidth(program);
+    doc.text(program, (pageWidth - examTypeTextWidth) / 2 , 35)
 
     doc.setFontSize(12);
     doc.text("Name: _________________________________", 10, 45);
@@ -194,13 +193,31 @@ const ViewData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://question-paper-generator-cpwx.onrender.com/view/${dataId}`);
+        const response = await fetch(`http://localhost:5000/api/view/${dataId}`, {
+          headers: {
+            'Referrer': 'http://localhost:5000/'
+          }
+        });        
         if (response.ok) {
           const data = await response.json();
-          setStructuredData(data.structuredData);
-          const { partA, partB } = processParts(data.structuredData);
-          setPartA(partA);
-          setPartB(partB);
+
+          setPartABloomsLevel(data.structuredData.selectedPartALevel);
+          setPartBBloomsLevel(data.structuredData.selectedPartBLevel);
+          setCollegeName(data.structuredData.collegeName);
+          setAffilatedUniversity(data.structuredData.affilatedUniversity);
+          setProgram(data.structuredData.program);
+          setLogobase64(data.structuredData.logoBase64);
+          setLogoFormat(data.structuredData.logoFormat);
+
+
+          const { partA, partB } = processParts(data.structuredData.structuredData);
+
+          if(partA.length && partB.length){
+            setPartA(partA);
+            setPartB(partB);
+          }else{
+            console.log("no valid Data found in part A and part B");
+          }
         } else {
           setError("Data not found or server error");
         }
