@@ -135,6 +135,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     collegeName,
     affilatedUniversity,
     program,
+    questionPaperName,
+    subject,
    } = req.body;
 
    console.log("Recieved Data :");
@@ -146,6 +148,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     collegeName,
     affilatedUniversity,
     program,
+    questionPaperName,
+    subject,
    });
 
   if (!file) {
@@ -178,6 +182,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       collegeName,
       affilatedUniversity,
       program,
+      questionPaperName,
+      subject,
       structuredData,
     };
 

@@ -1,9 +1,14 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "../firebaseConfig.js";
+import { ref, set } from "firebase/database";
 import { jsPDF } from "jspdf";
 import { Header  } from "./Header.tsx";
 
 const ViewData = () => {
+  const [currentUser, setCurrentUser] = useState("");
+  const userId = currentUser?.uid;
   const { dataId } = useParams(); // Get the dataId from the URL
   // const location = useLocation();
   // const queryParams = new URLSearchParams(location.search);
@@ -12,14 +17,42 @@ const ViewData = () => {
   const[collegeName, setCollegeName] = useState('');
   const[affilatedUniversity, setAffilatedUniversity] = useState('');
   const[program, setProgram] = useState('');
+  const[questionPaperName, setQuestionPaperName] = useState('');
+  const[subject, setSubject] = useState('');
   const[logoBase64, setLogobase64] = useState('');
   const[logoFormat, setLogoFormat] = useState('');
+  const[questionsLength, setQuestionsLength] = useState(null);
 
   const[partA, setPartA] = useState([]);
   const[partB, setPartB] = useState([]);
 
   const [loading, setLoading] = useState(true); // To handle loading state
   const [error, setError] = useState(null); // To handle any errors
+
+  const savePdfToDb = (base64Pdf, fileName, subject, questionsLength, userId) => {
+    const pdfRef = ref(db, 'pdfs/' + new Date().getTime());
+    const pdfData = {
+      name: fileName,
+      subject:subject,
+      questionsLength: questionsLength,
+      content: base64Pdf,
+      uploadedAt: Date.now(),
+      userId: userId,
+    };
+    set(pdfRef, pdfData)
+    .then(() => {
+      console.log("Pdf saved successfully!");
+    })
+    .catch((error) => {
+      console.error("error saving pdf", error);
+    });
+  };
+    
+    useEffect(() => {
+      onAuthStateChanged(auth, (currentUser) => {
+        setCurrentUser(currentUser);
+      });
+    }, []);
 
   // Function to process the data into Part A and Part B
   const processParts = useCallback((data) => {
@@ -78,7 +111,7 @@ const ViewData = () => {
   }, [partABloomsLevel, partBBloomsLevel]);
   
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
     if (!partA.length || !partB.length) {
       alert("Questions not loaded properly!");
       return;
@@ -186,8 +219,13 @@ const ViewData = () => {
         y += 10; // Add extra space after each pair
       }
     });
-
     doc.save("Question_Paper.pdf");
+    const pdfBase64 = doc.output('datauristring');
+    if(pdfBase64) {
+      savePdfToDb(pdfBase64, questionPaperName || "Question paper", subject, questionsLength, userId);
+    }else{
+      console.log("file not converted to base64");
+    }
   };
 
   useEffect(() => {
@@ -206,6 +244,8 @@ const ViewData = () => {
           setCollegeName(data.structuredData.collegeName);
           setAffilatedUniversity(data.structuredData.affilatedUniversity);
           setProgram(data.structuredData.program);
+          setQuestionPaperName(data.structuredData.questionPaperName);
+          setSubject(data.structuredData.subject);
           setLogobase64(data.structuredData.logoBase64);
           setLogoFormat(data.structuredData.logoFormat);
 
@@ -215,6 +255,8 @@ const ViewData = () => {
           if(partA.length && partB.length){
             setPartA(partA);
             setPartB(partB);
+            const totalLength = partA.length + partB.length;
+            setQuestionsLength(totalLength)
           }else{
             console.log("no valid Data found in part A and part B");
           }

@@ -26,7 +26,7 @@ function ConditionalRendering(){
         <div className="hidden md:flex items-center space-x-8">
           <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
           <a href="#how-it-works" className="text-gray-600 hover:text-gray-900">How it Works</a>
-          <a href="/upload">
+          <a href="/dashboard">
           <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
             Get Started
           </button>
