@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from '../firebaseConfig';
 import { useNavigate } from "react-router-dom";
 
@@ -16,8 +16,10 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password, name);
-      navigate("/upload");
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password, name);
+      const user = userCredential.user;
+      await updateProfile(user, { displayName: name });
+      navigate("/dashboard");
       setLoading(false)
     } catch (error) {
       console.error("SignUp error:", error.message);

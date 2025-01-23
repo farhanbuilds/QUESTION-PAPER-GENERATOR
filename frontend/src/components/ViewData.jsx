@@ -21,7 +21,7 @@ const ViewData = () => {
   const[subject, setSubject] = useState('');
   const[logoBase64, setLogobase64] = useState('');
   const[logoFormat, setLogoFormat] = useState('');
-  const[questionsLength, setQuestionsLength] = useState(null);
+  const[questionsLength, setQuestionsLength] = useState(0);
 
   const[partA, setPartA] = useState([]);
   const[partB, setPartB] = useState([]);
@@ -231,7 +231,7 @@ const ViewData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/view/${dataId}`, {
+        const response = await fetch(`https://unrealheroes.onrender.com/api/view/${dataId}`, {
           headers: {
             'Referrer': 'http://localhost:5000/'
           }
@@ -289,13 +289,22 @@ const ViewData = () => {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Extracted Data</h1>
 
-      <div className="mt-4">
+      <div className="mt-4 flex gap-5">
         <button
           onClick={generatePDF}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           Download PDF
         </button>
+        <a href="/dashboard">
+
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+          Go to Dashboard
+        </button>
+          </a>
+
       </div>
 
       {/* Part A */}

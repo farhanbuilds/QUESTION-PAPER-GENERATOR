@@ -60,9 +60,11 @@ function ConditionalRendering(){
             >
               How it Works
             </a>
-            <button className="w-full text-left px-3 py-2 text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">
+            <a href="/dashboard">
+              <button className="w-full text-left px-3 py-2 text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">
               Get Started
             </button>
+            </a>
           </div>
         </div>
       )}

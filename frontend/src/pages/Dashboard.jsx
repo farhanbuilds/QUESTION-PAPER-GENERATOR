@@ -19,11 +19,13 @@ import {
   TrendingUp,
   Users
 } from 'lucide-react';
+import SkeletonCard from "../components/SkeletonCard";
 
 const Dashboard = () => {
-    const [currentUser, setCurrentUser] = useState(null);
+    const [currentUser, setCurrentUser] = useState({});
     const [userPdfs, setUserPdfs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [logoutPopup, setLogoutPopup] = useState(false);
     const navigate = useNavigate();
     const [userStats] = useState({
         papersGenerated: 24,
@@ -54,12 +56,15 @@ const Dashboard = () => {
   ]);
 
   useEffect(() => {
+    setLoading(true);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
         if (user) {
             setCurrentUser(user);
+            setLoading(false);
         }else {
             setCurrentUser(null);
             setUserPdfs([]);
+            navigate("/login");
         }
     });
     return () => unsubscribe();
@@ -108,7 +113,18 @@ const Dashboard = () => {
     }
   };
 
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    
+    const year =date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2,"0");
+
+    return `${year}-${month}-${day}`;
+  };
+
   return (
+   
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Bar */}
       <nav className="bg-white shadow-sm">
@@ -116,26 +132,47 @@ const Dashboard = () => {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Grid className="h-8 w-8 text-indigo-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">QuestionPro</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">Unreal Heroes</span>
             </div>
             <div className="flex items-center space-x-4">
               <button className="p-2 text-gray-400 hover:text-gray-500">
                 <Bell className="h-6 w-6" />
               </button>
               <button 
-                onClick={handleLogout}
+                onClick={() => setLogoutPopup(true)}
                 className="flex items-center space-x-2 text-gray-500 hover:text-gray-700"
               >
                 <LogOut className="h-5 w-5" />
                 <span>Logout</span>
               </button>
+
+              { logoutPopup && (
+               <div className="absolute top-16 mt-2 bg-white shadow-lg rounded-lg p-4 w-40 border border-gray-200">
+              <p className="text-sm text-gray-700">Are you sure you want to log out?</p>
+              <div className="flex justify-between mt-3">
+              <button 
+                onClick={handleLogout} 
+                className="text-sm text-red-500 hover:text-red-700"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setLogoutPopup(false)} 
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                No
+              </button>
+            </div>
+          </div>
+           )}  
+
               <div className="flex items-center space-x-3">
                 <img
                   className="h-8 w-8 rounded-full bg-gray-200"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkXzsztRhsJQRJSSsLJzqPAp_f7yyr0BL51Q&s"
                   alt="User avatar"
                 />
-                <span className="text-sm font-medium text-gray-700">{currentUser.displayName}</span>
+                <span className="text-sm font-medium text-black">{currentUser.displayName}</span>
               </div>
             </div>
           </div>
@@ -211,12 +248,21 @@ const Dashboard = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">Recent Papers</h2>
+                <a href="/viewallpdfs">
                 <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                   View All
                 </button>
+                </a>
               </div>
               <div className="space-y-4">
-                {userPdfs.map((paper) => (
+                {loading && 
+                <>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                </>
+                }
+                { !loading && userPdfs.slice(-3).reverse().map((paper) => (
                   <div key={paper.userId} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-start space-x-4">
                       <div className="p-2 bg-white rounded-lg shadow-sm">
@@ -228,7 +274,7 @@ const Dashboard = () => {
                         <div className="flex items-center space-x-4 mt-1">
                           <span className="flex items-center text-xs text-gray-500">
                             <Clock className="h-4 w-4 mr-1" />
-                            {paper.uploadedAt}
+                            {formatDate(paper.uploadedAt)}
                           </span>
                           <span className="flex items-center text-xs text-gray-500">
                             <Brain className="h-4 w-4 mr-1" />
@@ -255,10 +301,10 @@ const Dashboard = () => {
               <div className="text-center">
                 <img
                   className="h-20 w-20 rounded-full mx-auto mb-4"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkXzsztRhsJQRJSSsLJzqPAp_f7yyr0BL51Q&s"
                   alt="User avatar"
                 />
-                <h2 className="text-xl font-semibold text-gray-900">{currentUser.displayName}</h2>
+                <h2 className="text-xl font-semibold text-gray-900">{currentUser.name}</h2>
                 <p className="text-sm text-gray-500">{currentUser.email}</p>
               </div>
               <div className="mt-6 grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
@@ -303,7 +349,7 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
-  );
+  ); 
 };
 
 export default Dashboard;

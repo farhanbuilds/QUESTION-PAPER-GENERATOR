@@ -9,6 +9,7 @@ import Home from "./Home.tsx";
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import ViewAllPdf from "./pages/ViewAllPdfs.jsx";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            <Route path="/viewallpdfs" element={<PrivateRoute><ViewAllPdf /></PrivateRoute>} />
             <Route path="/upload" element={<PrivateRoute><UploadForm /></PrivateRoute>} />
             <Route path="/view/:dataId" element={<PrivateRoute><ViewData /></PrivateRoute>} />
             <Route path="/signup" element={<Signup />} />

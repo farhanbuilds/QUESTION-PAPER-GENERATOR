@@ -43,7 +43,7 @@ export default function App() {
               <p className="hidden md:block text-2xl text-gray-600 mb-8 max-w-2xl mx-auto select-none">
                 Create professional question papers with automatic Bloom's Taxonomy classification and customized formatting for your educational institution.
               </p>
-              <a href="/upload">
+              <a href="/dashboard">
                 <button 
                  className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-xl select-none"
                 >
@@ -132,7 +132,7 @@ export default function App() {
           <h2 className="text-4xl font-bold text-gray-900 mb-8">
             Ready to Create Your Question Paper?
           </h2>
-          <a href="/upload">
+          <a href="/dashboard">
 
           <button
             className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-xl"
