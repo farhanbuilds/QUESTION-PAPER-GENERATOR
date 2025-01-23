@@ -244,7 +244,7 @@ const Dashboard = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">Recent Papers</h2>
-                { !userPdfs.length === 0 && <a href="/viewallpdfs">
+                { (userPdfs.length === 0) && <a href="/viewallpdfs">
                 <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                   View All
                 </button>
