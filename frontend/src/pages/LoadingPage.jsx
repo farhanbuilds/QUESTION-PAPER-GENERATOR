@@ -8,27 +8,27 @@ const LoadingPage = () => {
         {/* Animated Logo */}
         <div className="relative mb-8">
           <div className="absolute inset-0 animate-ping">
-            <Brain className="h-16 w-16 text-white opacity-30" />
+            <Brain className="h-16 w-16 text-violet-500 opacity-30" />
           </div>
           <div className="relative animate-bounce">
-            <Brain className="h-16 w-16 text-white" />
+            <Brain className="h-16 w-16 text-violet-600" />
           </div>
         </div>
 
         {/* Loading Text */}
-        <h2 className="text-2xl font-bold text-white mb-4">
+        <h2 className="text-2xl font-bold text-cyan-600 mb-4">
           Unreal Heroes
         </h2>
         
         {/* Loading Animation */}
         <div className="flex space-x-2 justify-center mb-8">
-          <div className="w-3 h-3 bg-white rounded-full animate-loader1"></div>
-          <div className="w-3 h-3 bg-white rounded-full animate-loader2"></div>
-          <div className="w-3 h-3 bg-white rounded-full animate-loader3"></div>
+          <div className="w-3 h-3 bg-cyan-400 rounded-full animate-loader1"></div>
+          <div className="w-3 h-3 bg-cyan-400 rounded-full animate-loader2"></div>
+          <div className="w-3 h-3 bg-cyan-400 rounded-full animate-loader3"></div>
         </div>
 
         {/* Loading Message */}
-        <p className="text-white text-opacity-80 animate-pulse">
+        <p className="text-violet-600 text-opacity-80 animate-pulse">
           Preparing your intelligent question paper generator...
         </p>
       </div>

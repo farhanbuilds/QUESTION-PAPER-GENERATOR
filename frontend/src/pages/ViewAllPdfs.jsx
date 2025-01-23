@@ -138,7 +138,7 @@ const ViewAllPdf = () => {
                   src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkXzsztRhsJQRJSSsLJzqPAp_f7yyr0BL51Q&s"
                   alt="User avatar"
                 />
-                <span className="text-sm font-medium text-black">{currentUser.displayName}</span>
+                <span className="text-sm font-medium text-black max-sm:hidden">{currentUser.displayName}</span>
               </div>
             </div>
           </div>

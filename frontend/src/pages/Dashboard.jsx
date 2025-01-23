@@ -135,9 +135,7 @@ const Dashboard = () => {
               <span className="ml-2 text-xl font-bold text-gray-900">Unreal Heroes</span>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-400 hover:text-gray-500">
-                <Bell className="h-6 w-6" />
-              </button>
+              
               <button 
                 onClick={() => setLogoutPopup(true)}
                 className="flex items-center space-x-2 text-gray-500 hover:text-gray-700"
@@ -172,7 +170,7 @@ const Dashboard = () => {
                   src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkXzsztRhsJQRJSSsLJzqPAp_f7yyr0BL51Q&s"
                   alt="User avatar"
                 />
-                <span className="text-sm font-medium text-black">{currentUser.displayName}</span>
+                <span className="text-sm font-medium text-black max-sm:hidden">{currentUser.displayName}</span>
               </div>
             </div>
           </div>
@@ -223,12 +221,10 @@ const Dashboard = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <a href="/upload">
-                <button className="flex flex-col items-center p-4 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                <button onClick={() => navigate("/upload")} className="flex flex-col items-center p-4 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
                   <Plus className="h-6 w-6 text-indigo-600 mb-2" />
                   <span className="text-sm font-medium text-gray-700">New Paper</span>
                 </button>
-                </a>
                 <button className="flex flex-col items-center p-4 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
                   <Layout className="h-6 w-6 text-indigo-600 mb-2" />
                   <span className="text-sm font-medium text-gray-700">Templates</span>
@@ -248,11 +244,11 @@ const Dashboard = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">Recent Papers</h2>
-                <a href="/viewallpdfs">
+                { !userPdfs.length === 0 && <a href="/viewallpdfs">
                 <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                   View All
                 </button>
-                </a>
+                </a>}
               </div>
               <div className="space-y-4">
                 {loading && 
@@ -290,6 +286,9 @@ const Dashboard = () => {
                     </div>
                   </div>
                 ))}
+
+                  { !loading && userPdfs.length === 0 && <h2 className="text-black"> You have not Generated any pdf. <a href="/upload" className="text-blue-800">Click here to Generate now</a></h2> }
+
               </div>
             </div>
           </div>
@@ -304,7 +303,7 @@ const Dashboard = () => {
                   src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkXzsztRhsJQRJSSsLJzqPAp_f7yyr0BL51Q&s"
                   alt="User avatar"
                 />
-                <h2 className="text-xl font-semibold text-gray-900">{currentUser.name}</h2>
+                <h2 className="text-xl font-semibold text-gray-900">{currentUser.displayName}</h2>
                 <p className="text-sm text-gray-500">{currentUser.email}</p>
               </div>
               <div className="mt-6 grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
