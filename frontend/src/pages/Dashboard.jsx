@@ -102,7 +102,27 @@ const Dashboard = () => {
     link.click();
   };
 
-  
+  const handleAverageRating = (userPdfs) => {
+    if (userPdfs && userPdfs.length > 0){
+      let ratingSum = 0;
+      console.log(ratingSum);
+      userPdfs.forEach((paper) => {
+        ratingSum += paper.rating;
+        console.log(ratingSum);
+      })
+      console.log(ratingSum);
+      const averageRating = ratingSum / userPdfs.length;
+      console.log("average",averageRating);
+      return averageRating.toFixed(1);
+    }else{
+      return 0;
+    }
+    
+  }
+
+  if(userPdfs.length > 0){
+    console.log("handle average",handleAverageRating(userPdfs));
+  }
 
   const handleLogout = async () => {
     try {
@@ -186,7 +206,7 @@ const Dashboard = () => {
               <TrendingUp className="h-5 w-5 text-green-500" />
             </div>
             <p className="text-sm font-medium text-gray-500">Papers Generated</p>
-            <p className="text-2xl font-bold text-gray-900">{userStats.papersGenerated}</p>
+            <p className="text-2xl font-bold text-gray-900">{userPdfs.length}</p>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
@@ -194,7 +214,7 @@ const Dashboard = () => {
               <TrendingUp className="h-5 w-5 text-green-500" />
             </div>
             <p className="text-sm font-medium text-gray-500">Total Questions</p>
-            <p className="text-2xl font-bold text-gray-900">{userStats.totalQuestions}</p>
+            <p className="text-2xl font-bold text-gray-900">{userPdfs.length * 20}</p>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
@@ -202,7 +222,7 @@ const Dashboard = () => {
               <TrendingUp className="h-5 w-5 text-green-500" />
             </div>
             <p className="text-sm font-medium text-gray-500">Average Rating</p>
-            <p className="text-2xl font-bold text-gray-900">{userStats.averageScore}</p>
+            <p className="text-2xl font-bold text-gray-900">{handleAverageRating(userPdfs)}</p>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
@@ -244,7 +264,7 @@ const Dashboard = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">Recent Papers</h2>
-                { (userPdfs.length === 0) && <a href="/viewallpdfs">
+                { !(userPdfs.length === 0) && <a href="/viewallpdfs">
                 <button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                   View All
                 </button>
@@ -275,6 +295,10 @@ const Dashboard = () => {
                           <span className="flex items-center text-xs text-gray-500">
                             <Brain className="h-4 w-4 mr-1" />
                             {paper.questionsLength} questions
+                          </span>
+                          <span className="flex items-center text-xs text-gray-500">
+                            <Star className="h-4 w-4 mr-1" />
+                            {paper.rating} 
                           </span>
                         </div>
                       </div>
@@ -308,11 +332,11 @@ const Dashboard = () => {
               </div>
               <div className="mt-6 grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">{userStats.papersGenerated}</p>
+                  <p className="text-2xl font-bold text-gray-900">{userPdfs.length}</p>
                   <p className="text-sm text-gray-500">Papers</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">{userStats.averageScore}</p>
+                  <p className="text-2xl font-bold text-gray-900">{handleAverageRating(userPdfs)}</p>
                   <p className="text-sm text-gray-500">Rating</p>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../firebaseConfig.js";
 import { ref, set } from "firebase/database";
 import { jsPDF } from "jspdf";
+import { Star } from "lucide-react";
 import { Header  } from "./Header.tsx";
 
 const ViewData = () => {
@@ -22,14 +23,19 @@ const ViewData = () => {
   const[logoBase64, setLogobase64] = useState('');
   const[logoFormat, setLogoFormat] = useState('');
   const[questionsLength, setQuestionsLength] = useState(0);
-
+  const[isPopupOpen, setIsPopupOpen] = useState(false);
+  const[rating, setRating] = useState(0);
   const[partA, setPartA] = useState([]);
   const[partB, setPartB] = useState([]);
 
   const [loading, setLoading] = useState(true); // To handle loading state
   const [error, setError] = useState(null); // To handle any errors
 
-  const savePdfToDb = (base64Pdf, fileName, subject, questionsLength, userId) => {
+  const handleRatingChange = (value) => {
+    setRating(value);
+  }
+
+  const savePdfToDb = (base64Pdf, fileName, subject, questionsLength, userId, rating) => {
     const pdfRef = ref(db, 'pdfs/' + new Date().getTime());
     const pdfData = {
       name: fileName,
@@ -38,6 +44,7 @@ const ViewData = () => {
       content: base64Pdf,
       uploadedAt: Date.now(),
       userId: userId,
+      rating: rating,
     };
     set(pdfRef, pdfData)
     .then(() => {
@@ -109,6 +116,7 @@ const ViewData = () => {
 
     return { partA, partB };
   }, [partABloomsLevel, partBBloomsLevel]);
+  
   
 
   const generatePDF = async () => {
@@ -222,16 +230,17 @@ const ViewData = () => {
     doc.save("Question_Paper.pdf");
     const pdfBase64 = doc.output('datauristring');
     if(pdfBase64) {
-      savePdfToDb(pdfBase64, questionPaperName || "Question paper", subject, questionsLength, userId);
+      savePdfToDb(pdfBase64, questionPaperName || "Question paper", subject, questionsLength, userId, rating);
     }else{
       console.log("file not converted to base64");
     }
+    setIsPopupOpen(false);
   };
-
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://unrealheroes.onrender.com/api/view/${dataId}`, {
+        const response = await fetch(`http://localhost:5000/api/view/${dataId}`, {
           headers: {
             'Referrer': 'http://localhost:5000/'
           }
@@ -291,7 +300,7 @@ const ViewData = () => {
 
       <div className="mt-4 flex gap-5">
         <button
-          onClick={generatePDF}
+          onClick={() => setIsPopupOpen(true)}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           Download PDF
@@ -351,9 +360,27 @@ const ViewData = () => {
               )}
             </React.Fragment>
           ))}
-        </ul>
+        </ul> 
       </div>
     </div>
+    {isPopupOpen && (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white rounded-lg p-6 shadow-lg w-96">
+          <h2 className="text-xl font-semibold mb-4">Rate the Generated Paper</h2>
+          <div className="flex justify-center mb-6">
+            {[1,2,3,4,5].map((star) => (
+              <span key={star} onClick={() => handleRatingChange(star)} className={`text-3xl cursor-pointer ${
+                rating >= star ? "text-yellow-500" : "text-gray-400"
+              }`} fill={rating >= star ? "yellow" : "none"} > <Star className="h-4 w-4" /> </span>
+            ))}
+          </div>
+          <div className="flex justify-between">
+            <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" onClick={generatePDF}>Submit & Download</button>
+            <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={() => setIsPopupOpen(false)}>Cancel</button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 };
