@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { ref, get } from "firebase/database";
+import {
+  onAuthStateChanged,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+  updateProfile,
+} from "firebase/auth";
+import { ref, set } from "firebase/database";
 import { auth, db } from "../firebaseConfig.js";
 import {
-  Bell,
   Camera,
   Save,
   X,
@@ -12,24 +17,18 @@ import {
   Eye,
   User,
   Grid,
-  LogOut,
 } from "lucide-react";
 
 const EditProfile = () => {
-  interface User {
-    displayName?: string | null;
-    // Add other properties if needed
-  }
-
-  const [currentUser, setCurrentUser] = useState<User>({});
-  const [userPdfs, setUserPdfs] = useState([]);
+  const [currentUser, setCurrentUser] = useState({});
   const [loading, setLoading] = useState(true);
-  const [logoutPopup, setLogoutPopup] = useState(false);
   const navigate = useNavigate();
-  const [name, setName] = useState("John Doe");
+  const [name, setName] = useState("");
   const [profilePic, setProfilePic] = useState(
     "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400"
   );
+  const [isProfileUpdate, setIsProfileUpdate] = useState(false);
+  const [isPasswordUpdate, setIsPasswordUpdate] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,128 +36,115 @@ const EditProfile = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isNameUpdate, setIsNameUpdate] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission here
-    console.log("Profile updated");
-    setIsEditing(false);
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsEditing(true);
+    const userId = currentUser.uid;
+    if (isProfileUpdate ) {
+      try {
+        await set(ref(db, `users/${userId}`), {
+          profilePic: profilePic,
+          displayName:name,
+        });
+      } catch (error) {
+        console.error("Error saving profile picture:", error);
+      }
+    }
+
+    if (isNameUpdate ) {
+      try {
+        await updateProfile(auth.currentUser, {
+          displayName: name,
+        }
+        )
+      } catch (error) {
+        console.error("Error saving name:", error);
+      }
+    }
+
+    if (isPasswordUpdate) {
+      try {
+        const user = currentUser;
+        const credential = EmailAuthProvider.credential(
+          user.email,
+          currentPassword
+        );
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPassword);
+        console.log("Password updated successfully");
+      } catch (error) {
+        console.error("Error updating password:", error);
+      }
+    }
+
+    console.log("Profile updated");
+    setIsEditing(false);
+    navigate("/dashboard");
+  };
+
+  const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfilePic(reader.result as string);
+        setProfilePic(reader.result);
       };
       reader.readAsDataURL(file);
+      const profileBase64 = await convertFileToBase64(file);
+      setProfilePic(profileBase64);
+      if (profileBase64) {
+        setIsProfileUpdate(true);
+      }
     }
   };
 
     useEffect(() => {
       setLoading(true);
       const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          setCurrentUser(user);
-          setLoading(false);
-        } else {
-          setCurrentUser({});
-          setUserPdfs([]);
-          navigate("/login");
-        }
+          if (user) {
+            if(user){
+              setCurrentUser(user);
+              setName(user.displayName)
+            }
+              setLoading(false);
+          }else {
+              setCurrentUser({});
+              navigate("/login");
+          }
       });
       return () => unsubscribe();
-    }, []);
+    }, [currentUser]);
 
-    const handlePdfDownload = (base64, fileName) => {
-      const link = document.createElement("a");
-      link.href = base64;
-      link.download = fileName;
-      link.click();
-    };
 
-    const handleLogout = async () => {
-      try {
-        await signOut(auth);
-        navigate("/login");
-      } catch (error) {
-        console.error("Error logging out :", error);
-      }
-    };
-
-    const formatDate = (timestamp) => {
-      const date = new Date(timestamp);
-
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-
-      return `${year}-${month}-${day}`;
-    };
-
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Navigation Bar */}
-        <nav className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex items-center">
-                <Grid className="h-8 w-8 text-indigo-600" />
-                <span className="ml-2 text-xl font-bold text-gray-900">
-                  Unreal Heroes
-                </span>
-              </div>
-              <div className="flex items-center space-x-4">
-                <button className="p-2 text-gray-400 hover:text-gray-500">
-                  <Bell className="h-6 w-6" />
-                </button>
-                <button
-                  onClick={() => setLogoutPopup(true)}
-                  className="flex items-center space-x-2 text-gray-500 hover:text-gray-700"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span>Logout</span>
-                </button>
-
-                {logoutPopup && (
-                  <div className="absolute top-16 mt-2 bg-white shadow-lg rounded-lg p-4 w-40 border border-gray-200">
-                    <p className="text-sm text-gray-700">
-                      Are you sure you want to log out?
-                    </p>
-                    <div className="flex justify-between mt-3">
-                      <button
-                        onClick={handleLogout}
-                        className="text-sm text-red-500 hover:text-red-700"
-                      >
-                        Yes
-                      </button>
-                      <button
-                        onClick={() => setLogoutPopup(false)}
-                        className="text-sm text-gray-500 hover:text-gray-700"
-                      >
-                        No
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center space-x-3">
-                  <img
-                    className="h-8 w-8 rounded-full bg-gray-200"
-                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkXzsztRhsJQRJSSsLJzqPAp_f7yyr0BL51Q&s"
-                    alt="User avatar"
-                  />
-                  <span className="text-sm font-medium text-black max-sm:hidden">
-                    {currentUser.displayName}
-                  </span>
-                </div>
-              </div>
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation Bar */}
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-start ml-8 h-16">
+            <div className="flex items-center">
+              <Grid className="h-8 w-8 text-indigo-600" />
+              <span className="ml-2 text-xl font-bold text-gray-900">
+                Unreal Heroes
+              </span>
             </div>
           </div>
-        </nav>
+        </div>
+      </nav>
 
-        <div className="bg-white shadow-xl rounded-lg overflow-hidden">
+      <div className="w-screen flex justify-center items-center">
+        <div className="bg-white shadow-xl w-[70vw] rounded-lg overflow-hidden mt-20">
           {/* Header */}
           <div className="px-6 py-8 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
             <h1 className="text-3xl font-bold text-white text-center">
@@ -212,7 +198,10 @@ const EditProfile = () => {
                 type="text"
                 id="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value)
+                  setIsNameUpdate(true)
+                }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter your full name"
               />
@@ -270,7 +259,10 @@ const EditProfile = () => {
                       type={showNewPassword ? "text" : "password"}
                       id="new-password"
                       value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      onChange={(e) => {
+                      setNewPassword(e.target.value)
+                      setIsPasswordUpdate(true)
+                      }}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="Enter new password"
                     />
@@ -332,7 +324,7 @@ const EditProfile = () => {
               >
                 <span className="flex items-center space-x-2">
                   <X className="w-5 h-5" />
-                  <span>Cancel</span>
+                  <span onClick={()=> navigate("/dashboard")}>Cancel</span>
                 </span>
               </button>
               <button
@@ -346,8 +338,16 @@ const EditProfile = () => {
               </button>
             </div>
           </form>
+
         </div>
       </div>
+      { isEditing && 
+      <div className="w-scren h-screen  fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="w-16 h-16 border-4 border-t-transparent border-x-indigo-500 rounded-full animate-spin">
+        </div>
+      </div> }
+    </div>
+
     );
 };
 

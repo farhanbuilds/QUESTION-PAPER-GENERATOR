@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { ref,get } from "firebase/database";
+import { ref,get, set } from "firebase/database";
 import { auth, db } from "../firebaseConfig.js";
 import {
   BarChart3,
@@ -26,6 +26,7 @@ const Dashboard = () => {
     const [userPdfs, setUserPdfs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [logoutPopup, setLogoutPopup] = useState(false);
+    const [profilePic, setProfilePic] = useState("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkXzsztRhsJQRJSSsLJzqPAp_f7yyr0BL51Q&s");
     const navigate = useNavigate();
     const [userStats] = useState({
         papersGenerated: 24,
@@ -55,6 +56,15 @@ const Dashboard = () => {
     }
   ]);
 
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   useEffect(() => {
     setLoading(true);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -77,19 +87,28 @@ const Dashboard = () => {
             try {
                 const pdfsRef = ref(db, "pdfs");
                 const snapshot = await get(pdfsRef);
+                const profileRef = ref(db, `users/${currentUser.uid}/profilePic`);
+                const profileSnapshot = await get(profileRef);
 
                 if (snapshot.exists()) {
-                   const pdfsData = snapshot.val();
-                   const userPdfs = Object.values(pdfsData).filter((pdf) => pdf.userId === currentUser.uid ); 
-                   setUserPdfs(userPdfs);
-                }else {
-                    setUserPdfs([]);
+                  const pdfsData = snapshot.val();
+                  const userPdfs = Object.values(pdfsData).filter((pdf) => pdf.userId === currentUser.uid ); 
+                  setUserPdfs(userPdfs);
+               }else {
+                setUserPdfs([]);
+               }
+
+               if (profileSnapshot.exists()) {
+                  const profilePicData = profileSnapshot.val();
+                  if (profilePicData) {
+                      setProfilePic(profilePicData);
+                  }
                 }
             } catch (error) {
-                console.error("Error fetching PDFs :", error);
+              console.error("Error fetching PDFs :", error);
             } finally {
-                setLoading(false);
-            }
+              setLoading(false);
+            } 
         };
         fetchUserPdfs();
     }
@@ -187,7 +206,7 @@ const Dashboard = () => {
               <div className="flex items-center space-x-3">
                 <img
                   className="h-8 w-8 rounded-full bg-gray-200"
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkXzsztRhsJQRJSSsLJzqPAp_f7yyr0BL51Q&s"
+                  src={profilePic}
                   alt="User avatar"
                 />
                 <span className="text-sm font-medium text-black max-sm:hidden">{currentUser.displayName}</span>
@@ -324,7 +343,7 @@ const Dashboard = () => {
               <div className="text-center">
                 <img
                   className="h-20 w-20 rounded-full mx-auto mb-4"
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkXzsztRhsJQRJSSsLJzqPAp_f7yyr0BL51Q&s"
+                  src={profilePic}
                   alt="User avatar"
                 />
                 <h2 className="text-xl font-semibold text-gray-900">{currentUser.displayName}</h2>
@@ -340,9 +359,11 @@ const Dashboard = () => {
                   <p className="text-sm text-gray-500">Rating</p>
                 </div>
               </div>
+              <a href="/editprofile">
               <button className="w-full mt-6 bg-indigo-50 text-indigo-600 py-2 px-4 rounded-lg hover:bg-indigo-100 transition-colors">
                 Edit Profile
               </button>
+              </a>
             </div>
 
             {/* Popular Templates */}

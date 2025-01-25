@@ -10,6 +10,7 @@ import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import ViewAllPdf from "./pages/ViewAllPdfs.jsx";
+import EditProfile from "./pages/EditProfile.jsx";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="/view/:dataId" element={<PrivateRoute><ViewData /></PrivateRoute>} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/editprofile" element={<PrivateRoute><EditProfile /></PrivateRoute>}/>
           </Routes>
       </Router>
     </AuthProvider>
