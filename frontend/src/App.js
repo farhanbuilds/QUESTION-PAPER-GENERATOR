@@ -5,7 +5,7 @@ import PrivateRoute from "./PrivateRoute";
 import "./App.css";
 import UploadForm from "./components/UploadForm.tsx";
 import ViewData from "./components/ViewData.jsx";
-import Home from "./Home.tsx";
+import Home from "./Home.jsx";
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";

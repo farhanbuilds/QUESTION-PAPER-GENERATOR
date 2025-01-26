@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@react-three/drei": "^9.121.2",
     "@react-three/fiber": "^8.17.12",
     "@splinetool/react-spline": "^4.0.0",
@@ -16,6 +17,7 @@
     "@types/three": "^0.172.0",
     "axios": "^1.7.9",
     "firebase": "^11.2.0",
+    "gsap": "^3.12.7",
     "heroicons-react": "^1.4.1",
     "jspdf": "^2.5.2",
     "lucide-react": "^0.468.0",
