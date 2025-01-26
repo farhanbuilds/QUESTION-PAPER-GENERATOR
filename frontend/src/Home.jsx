@@ -62,7 +62,7 @@ export default function Home() {
         opacity: 1,
         rotateY: 0,
         duration: 1.2,
-        stagger: 0.2,
+        stagger: 0.5,
         ease: 'back.out(1.7)',
         scrollTrigger: {
           trigger: '#features',
@@ -81,10 +81,10 @@ export default function Home() {
         rotate: 0,
         y: 0,
         duration: 1.5,
-        stagger: 0.3,
-        ease: 'elastic.out(1, 0.5)',
+        stagger: 0.5,
+        ease: 'back.out(1.7)',
         scrollTrigger: {
-          trigger: '#how-it-works',
+          trigger: '#how',
           start: 'top 80%',
         },
       }
@@ -174,7 +174,7 @@ export default function Home() {
 
       {/* How It Works Section */}
       <div id="how-it-works" className="bg-gradient-to-br from-indigo-50 to-pink-50 py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div id='how' className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               How It Works

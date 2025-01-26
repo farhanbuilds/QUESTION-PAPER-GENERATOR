@@ -7,7 +7,7 @@ import {
   updatePassword,
   updateProfile,
 } from "firebase/auth";
-import { ref, set } from "firebase/database";
+import { ref, set, get } from "firebase/database";
 import { auth, db } from "../firebaseConfig.js";
 import {
   Camera,
@@ -115,7 +115,7 @@ const EditProfile = () => {
           if (user) {
             if(user){
               setCurrentUser(user);
-              setName(user.displayName)
+              setName(user.displayName);
             }
               setLoading(false);
           }else {
@@ -125,6 +125,28 @@ const EditProfile = () => {
       });
       return () => unsubscribe();
     }, [currentUser]);
+
+     useEffect(() => {
+        if (currentUser) {
+            const fetchUserPfp = async () => {
+                setLoading(true);
+                try {
+                    const profileRef = ref(db, `users/${currentUser.uid}/profilePic`);
+                    const profileSnapshot = await get(profileRef);
+    
+                   if (profileSnapshot.exists()) {
+                      const profilePicData = profileSnapshot.val();
+                      if (profilePicData) {
+                          setProfilePic(profilePicData);
+                      }
+                    }
+                } catch (error) {
+                  console.error("Error fetching Profile Pic :", error);
+                } 
+            };
+            fetchUserPfp();
+        }
+      }, [currentUser]);
 
 
   return (

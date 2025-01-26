@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { BookOpen, Menu, X } from 'lucide-react';
+import { BookOpen, Menu, X, Brain } from 'lucide-react';
 
 export function Header() {
   return (
@@ -16,7 +16,8 @@ function ConditionalRendering(){
     return <header className="fixed w-full top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
     <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between h-16">
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+        <Brain className="h-8 w-8 text-indigo-600" />
           <a href="/" className="text-2xl font-bold text-indigo-600">
             UNREAL HEROES
           </a>
