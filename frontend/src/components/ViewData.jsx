@@ -104,7 +104,7 @@ const ViewData = () => {
         totalQuestionsInPartB < 10 &&
         pickedUnits[unitId] < allUnitsQuestions.length &&
         question.bloomsLevel === partBBloomsLevel
-      ) {
+      ) { 
         partB.push(question);
         pickedUnits[unitId] += 1;
         totalQuestionsInPartB++;
@@ -371,7 +371,7 @@ const ViewData = () => {
             {[1,2,3,4,5].map((star) => (
               <span key={star} onClick={() => handleRatingChange(star)} className={`text-3xl cursor-pointer ${
                 rating >= star ? "text-yellow-500" : "text-gray-400"
-              }`} fill={rating >= star ? "yellow" : "none"} > <Star className="h-4 w-4" /> </span>
+              }`}  > <Star className="h-4 w-4" fill={rating >= star ? "#EAB308" : "none"}/> </span>
             ))}
           </div>
           <div className="flex justify-between">
